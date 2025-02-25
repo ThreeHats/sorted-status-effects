@@ -1,18 +1,15 @@
 {
-  "id": "module",
-  "title": "New Module",
+  "id": "sorted-status-effects",
+  "title": "Sorted Status Effects",
   "description": "",
-  "version": "#{VERSION}#",
+  "version": "1.0.0",
   "library": "false",
-  "manifestPlusVersion": "1.2.0",
   "compatibility": {
-    "minimum": 10,
-    "verified": 10,
-    "maximum": 11
+    "verified": 12
   },
   "authors": [
     {
-      "name": "",
+      "name": "JustAnotherIdea",
       "url": "",
       "discord": ""
     }
@@ -22,13 +19,13 @@
     "requires": []
   },
   "esmodules": [
-    "scripts/module.js"
-  ],
-  "scripts": [
-    "scripts/lib/lib.js"
+    "sorted-status-effects.js",
+    "scripts/change-hud.js",
+    "scripts/keybindings.js",
+    "scripts/jsUtils.js"
   ],
   "styles": [
-    "styles/module.css"
+    "styles/sorted-status-effects.css"
   ],
   "languages": [
     {
