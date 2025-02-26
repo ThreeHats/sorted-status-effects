@@ -4,6 +4,7 @@ import { on, stopEvent } from "./jsUtils.js";
  * The currently hovered token HUD entity and status icon element.
  */
 let activeEffectHud, activeEffectHudIcon, targetStatusId;
+let statusEffectsTags = [];
 
 /**
  * Applies keybinds to the given entity to change status counters. Which 
@@ -12,7 +13,7 @@ let activeEffectHud, activeEffectHudIcon, targetStatusId;
  * @param {TokenHUD} entity The Foundry entity associated with the element.
  * @param {jQuery} html The HTML code of the element.
  */
-export  function registerKeybinds(entity, html) {
+export function registerKeybinds(entity, html) {
     let effectHud = html[0].querySelector(".status-effects");
     if (!effectHud) return;
 
@@ -41,11 +42,11 @@ function onEffectMouseOut() {
 }
 
 /**
- * Handles the keydown event for the currently active status icon HUD element. If none is active
+ * Handles the keydown sorting event for the currently active status icon HUD element. If none is active
  *  this handler returns immediately. Otherwise, we store the statusId.
  * @param {jQuery.Event} event The key down event triggered by jQuery.
  */
-export  function onEffectKeyDown(event) {
+export function onEffectKeyDown(event) {
     if (!activeEffectHud || !activeEffectHud.object.visible) return;
 
     // let keyValue = parseInt(event.key);
@@ -62,7 +63,7 @@ export  function onEffectKeyDown(event) {
 }
 
 /**
- * Handles the keyup event for the currently active status icon HUD element. If none is active
+ * Handles the keyup sorting event for the currently active status icon HUD element. If none is active
  *  this handler returns immediately. Otherwise, we change the order of the sorted effects if not the same target.
  * @param {jQuery.Event} event The key down event triggered by jQuery.
  */
@@ -108,4 +109,61 @@ export function onEffectKeyUp(event) {
 
     // Force a refresh of the status icons
     activeEffectHud.render();
+}
+
+/**
+ * Handles the keydown tagger menu event for the currently active status icon HUD element. If none is active
+ *  this handler returns immediately. Otherwise, we display the tagging menu dialog.
+ * @param {jQuery.Event} event The key down event triggered by jQuery.
+ */
+export function onTagKeyDown(event) {
+    if (!activeEffectHud || !activeEffectHud.object.visible) return;
+
+    event.currentTarget = activeEffectHudIcon;
+    const { statusId } = event.currentTarget.dataset;
+
+    console.log("SSE| " + statusId);
+
+    let sortedStatus = game.settings.get('sorted-status-effects', 'sortedStatusEffects');
+    let tags = sortedStatus[statusId].tags || [];
+
+    if (statusEffectsTags.length === 0) {
+        statusEffectsTags = game.settings.get('sorted-status-effects', 'statusEffectsTags') || [];
+    }
+
+    // Create the tagging menu dialog with checkboxes
+    let content = `<div><label>Available Tags:</label><ul>`;
+    for (let tag of statusEffectsTags) {
+        let checked = tags.includes(tag) ? 'checked' : '';
+        content += `<li><input type="checkbox" data-tag="${tag}" ${checked}/> ${tag}</li>`;
+    }
+    content += `</ul><label>Add Tag:</label><input type="text" id="new-status-tag" /></div>`;
+
+    new Dialog({
+        title: "Tagging Menu",
+        content: content,
+        buttons: {
+            save: {
+                label: "Save Tags",
+                callback: (html) => {
+                    let newTag = html.find('#new-status-tag').val();
+                    if (newTag && !statusEffectsTags.includes(newTag)) {
+                        statusEffectsTags.push(newTag);
+                        game.settings.set('sorted-status-effects', 'statusEffectsTags', statusEffectsTags);
+                    }
+                    let selectedTags = [];
+                    html.find('input[type="checkbox"]:checked').each(function() {
+                        selectedTags.push($(this).data('tag'));
+                    });
+                    sortedStatus[statusId].tags = selectedTags;
+                    if (newTag) selectedTags.push(newTag);
+                    game.settings.set('sorted-status-effects', 'sortedStatusEffects', sortedStatus);
+                }
+            },
+            close: {
+                label: "Close"
+            }
+        },
+        default: "save"
+    }).render(true);
 }

@@ -1,4 +1,4 @@
-import { registerKeybinds, onEffectKeyDown, onEffectKeyUp } from "./scripts/keybindings.js";
+import { registerKeybinds, onEffectKeyDown, onEffectKeyUp, onTagKeyDown } from "./scripts/keybindings.js";
 import { changeHUD } from "./scripts/change-hud.js";
 import { on } from "./scripts/jsUtils.js";
 
@@ -10,6 +10,13 @@ export class SortedStatusEffects {
         // Register settings
         game.settings.register('sorted-status-effects', 'sortedStatusEffects', {
             name: 'Sorted Status Effects',
+            scope: 'world',
+            config: false,
+            type: Object,
+            default: undefined
+        });
+        game.settings.register('sorted-status-effects', 'statusEffectsTags', {
+            name: 'Tags',
             scope: 'world',
             config: false,
             type: Object,
@@ -27,6 +34,16 @@ export class SortedStatusEffects {
             onUp: (context) => {
                 console.log('Keybinding released');
                 onEffectKeyUp(context);
+            },
+            restricted: true
+        });
+        game.keybindings.register('sorted-status-effects', 'taggingMenu', {
+            name: 'Tagging Menu',
+            hint: 'Open the tagging menu',
+            editable: [{ key: 'KeyQ' }],
+            onDown: (context) => {
+                console.log('Keybinding pressed');
+                onTagKeyDown(context);
             },
             restricted: true
         });
@@ -78,7 +95,8 @@ export class SortedStatusEffects {
             if (sortedStatusEffects[baseStatusEffects[i][0]] === undefined) {
                 sortedStatusEffects[baseStatusEffects[i][0]] = {
                     order: i,
-                    hidden: baseStatusEffects[i][1] === undefined ? false : baseStatusEffects[i][1]
+                    hidden: baseStatusEffects[i][1] === undefined ? false : baseStatusEffects[i][1],
+                    tag: []
                 };
             }
             effectIds.push(baseStatusEffects[i][0]);
@@ -95,6 +113,16 @@ export class SortedStatusEffects {
 
         console.log('Sorted Status Effects | Sorted status effects:', sortedStatusEffects);
 
+        let tags = game.settings.get('sorted-status-effects', 'statusEffectsTags');
+        if (!tags) {
+            tags = [];
+            game.settings.set('sorted-status-effects', 'statusEffectsTags', tags);
+        }
+
+        console.log('Sorted Status Effects | Tags:', tags);
+
+        let shownTags = [];
+
         // Apply order and hidden styling to the status icons
         statusIcons.each((index, icon) => {
             console.log('Sorted Status Effects | Icon:', icon);
@@ -104,6 +132,18 @@ export class SortedStatusEffects {
                 $(icon).css('order', effect.order);
                 if (effect.hidden) {
                     $(icon).css('display', 'none');
+                }
+                if (effect.tags) {
+                    console.log('Sorted Status Effects | Effect Tags:', effect.tags);
+                    let hide = true;
+                    for (let tag of effect.tags) {
+                        if (shownTags.includes(tag)) {
+                            hide = false;
+                        }
+                    }
+                    if (hide) {
+                        $(icon).css('display', 'none');
+                    }
                 }
             }
         });
