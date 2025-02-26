@@ -22,7 +22,7 @@ A Foundry VTT module that enhances the Token HUD by adding the ability to sort a
 ## Installation
 
 1. Inside Foundry VTT, select the Game Modules tab in the Configuration and Setup menu
-2. Click the Install Module button and enter the following URL: [Latest Release Manifest]
+2. Click the Install Module button and enter the following URL: https://github.com/JustAnotherIdea/sorted-status-effects/releases/latest/download/module.json
 3. Click Install and wait for installation to complete
 
 ## Required Modules
