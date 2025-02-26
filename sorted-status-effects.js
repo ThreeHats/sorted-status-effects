@@ -187,7 +187,7 @@ export class SortedStatusEffects {
                 if (effect.hidden) {
                     $(icon).css('display', 'none');
                 }
-                if (effect.tags) {
+                if (effect.tags && effect.tags.length > 0) {
                     console.log('Sorted Status Effects | Effect Tags:', effect.tags);
                     let hide = true;
                     for (let tag of effect.tags) {

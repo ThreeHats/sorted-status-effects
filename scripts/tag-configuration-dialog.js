@@ -52,15 +52,24 @@ export class TagConfigurationDialog extends FormApplication {
         const index = event.currentTarget.dataset.index;
         const tags = game.settings.get('sorted-status-effects', 'statusEffectsTags') || [];
         const tagIcons = game.settings.get('sorted-status-effects', 'tagIcons') || {};
+        const sortedStatus = game.settings.get('sorted-status-effects', 'sortedStatusEffects') || {};
         
         // Remove the tag and its icon
         const tagToRemove = tags[index];
         tags.splice(index, 1);
         delete tagIcons[tagToRemove];
 
-        // Save the updated settings
+        // Remove the tag from all status effects
+        for (const [effectId, effect] of Object.entries(sortedStatus)) {
+            if (effect.tags) {
+                effect.tags = effect.tags.filter(tag => tag !== tagToRemove);
+            }
+        }
+
+        // Save all updated settings
         await game.settings.set('sorted-status-effects', 'statusEffectsTags', tags);
         await game.settings.set('sorted-status-effects', 'tagIcons', tagIcons);
+        await game.settings.set('sorted-status-effects', 'sortedStatusEffects', sortedStatus);
 
         // Re-render the form
         this.render();
@@ -73,8 +82,10 @@ export class TagConfigurationDialog extends FormApplication {
     }
 
     async _updateObject(event, formData) {
+        const oldTags = game.settings.get('sorted-status-effects', 'statusEffectsTags') || [];
         const tags = [];
         const tagIcons = {};
+        const sortedStatus = game.settings.get('sorted-status-effects', 'sortedStatusEffects') || {};
         
         // Convert form data to tags and icons
         Object.entries(formData).forEach(([key, value]) => {
@@ -93,6 +104,20 @@ export class TagConfigurationDialog extends FormApplication {
             }
         });
 
+        // Find removed tags
+        const removedTags = oldTags.filter(tag => !tags.includes(tag));
+
+        // Remove deleted tags from all status effects
+        if (removedTags.length > 0) {
+            for (const [effectId, effect] of Object.entries(sortedStatus)) {
+                if (effect.tags) {
+                    effect.tags = effect.tags.filter(tag => !removedTags.includes(tag));
+                }
+            }
+            await game.settings.set('sorted-status-effects', 'sortedStatusEffects', sortedStatus);
+        }
+
+        // Save the updated settings
         await game.settings.set('sorted-status-effects', 'statusEffectsTags', tags);
         await game.settings.set('sorted-status-effects', 'tagIcons', tagIcons);
     }

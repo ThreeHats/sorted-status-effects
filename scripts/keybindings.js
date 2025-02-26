@@ -86,20 +86,15 @@ export function onEffectKeyUp(event) {
 
     if (statusOrder === undefined || targetOrder === undefined) return;
 
-    // Determine the range for reordering
-    const [startOrder, endOrder] = [Math.min(statusOrder, targetOrder), Math.max(statusOrder, targetOrder)];
-
     // Create a list of status effects to reorder
     const statusList = Object.entries(sortedStatus)
         .map(([key, value]) => ({ id: key, order: value.order }))
         .sort((a, b) => a.order - b.order);
 
     // Reorder the status effects
-    let count = startOrder;
+    let count = 0;
     for (const status of statusList) {
-        if (status.order >= startOrder && status.order <= endOrder) {
-            sortedStatus[status.id].order = count++;
-        }
+        sortedStatus[status.id].order = ++count;
     }
 
     // Move the targetStatusId to the order of the statusId
@@ -130,21 +125,21 @@ export function onTagKeyDown(event) {
     let tags = sortedStatus[statusId].tags || [];
     let tagIcons = game.settings.get('sorted-status-effects', 'tagIcons') || {};
 
-    if (statusEffectsTags.length === 0) {
-        statusEffectsTags = game.settings.get('sorted-status-effects', 'statusEffectsTags') || [];
-    }
+    statusEffectsTags = game.settings.get('sorted-status-effects', 'statusEffectsTags') || [];
 
     // Create the tagging menu dialog with checkboxes and icons
     let content = `<div><label>Available Tags:</label><ul style="list-style: none; padding-left: 0;">`;
-    for (let tag of statusEffectsTags) {
-        let checked = tags.includes(tag) ? 'checked' : '';
-        let iconSrc = tagIcons[tag] || 'icons/svg/d20.svg';
-        content += `
-            <li style="display: flex; align-items: center; gap: 5px; margin-bottom: 5px;">
-                <input type="checkbox" data-tag="${tag}" ${checked}/>
-                <img src="${iconSrc}" width="24" height="24" style="flex: 0 0 24px;"/>
-                <span style="flex: 1;">${tag}</span>
-            </li>`;
+    if (statusEffectsTags.length > 0) {
+        for (let tag of statusEffectsTags) {
+            let checked = tags.includes(tag) ? 'checked' : '';
+            let iconSrc = tagIcons[tag] || 'icons/svg/d20.svg';
+            content += `
+                <li style="display: flex; align-items: center; gap: 5px; margin-bottom: 5px;">
+                    <input type="checkbox" data-tag="${tag}" ${checked}/>
+                    <img src="${iconSrc}" width="24" height="24" style="flex: 0 0 24px;"/>
+                    <span style="flex: 1;">${tag}</span>
+                </li>`;
+        }
     }
     content += `</ul>
         <div style="display: flex; gap: 5px; align-items: center;">
@@ -170,6 +165,9 @@ export function onTagKeyDown(event) {
                 callback: (html) => {
                     let newTag = html.find('#new-status-tag').val();
                     let newIcon = html.find('#new-status-icon').val();
+                    if (!Array.isArray(statusEffectsTags)) {
+                        statusEffectsTags = [];
+                    }
                     if (newTag && !statusEffectsTags.includes(newTag)) {
                         statusEffectsTags.push(newTag);
                         game.settings.set('sorted-status-effects', 'statusEffectsTags', statusEffectsTags);
