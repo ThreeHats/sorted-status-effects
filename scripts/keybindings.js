@@ -1,5 +1,3 @@
-import { on, stopEvent } from "./jsUtils.js";
-
 /**
  * The currently hovered token HUD entity and status icon element.
  */
@@ -47,6 +45,7 @@ function onEffectMouseOut() {
  * @param {jQuery.Event} event The key down event triggered by jQuery.
  */
 export function onEffectKeyDown(event) {
+    let debug = game.settings.get('sorted-status-effects', 'debug');
     if (!activeEffectHud || !activeEffectHud.object.visible) return;
 
     // let keyValue = parseInt(event.key);
@@ -55,7 +54,7 @@ export function onEffectKeyDown(event) {
     event.currentTarget = activeEffectHudIcon;
     const { statusId } = event.currentTarget.dataset;
 
-    console.log("SSE| " + statusId);
+    if (debug) console.log("SSE| " + statusId);
 
     targetStatusId = statusId;
 
@@ -68,17 +67,18 @@ export function onEffectKeyDown(event) {
  * @param {jQuery.Event} event The key down event triggered by jQuery.
  */
 export function onEffectKeyUp(event) {
+    let debug = game.settings.get('sorted-status-effects', 'debug');
     if (!activeEffectHud || !activeEffectHud.object.visible) return;
 
     event.currentTarget = activeEffectHudIcon;
     const { statusId } = event.currentTarget.dataset;
 
-    console.log("SSE| " + statusId);
+    if (debug) console.log("SSE| " + statusId);
 
     if (targetStatusId === statusId) return;
 
     let sortedStatus = game.settings.get('sorted-status-effects', 'sortedStatusEffects');
-    console.log("SSE| Presorted:", sortedStatus);
+    if (debug) console.log("SSE| Presorted:", sortedStatus);
 
     // Get the orders of the statusId and targetStatusId
     const statusOrder = sortedStatus[statusId]?.order;
@@ -102,7 +102,7 @@ export function onEffectKeyUp(event) {
 
     game.settings.set('sorted-status-effects', 'sortedStatusEffects', sortedStatus);
 
-    console.log("SSE| Postsorted:", sortedStatus);
+    if (debug) console.log("SSE| Postsorted:", sortedStatus);
 
     // Force a refresh of the status icons
     activeEffectHud.render();
@@ -114,12 +114,13 @@ export function onEffectKeyUp(event) {
  * @param {jQuery.Event} event The key down event triggered by jQuery.
  */
 export function onTagKeyDown(event) {
+    let debug = game.settings.get('sorted-status-effects', 'debug');
     if (!activeEffectHud || !activeEffectHud.object.visible) return;
 
     event.currentTarget = activeEffectHudIcon;
     const { statusId } = event.currentTarget.dataset;
 
-    console.log("SSE| " + statusId);
+    if (debug) console.log("SSE| " + statusId);
 
     let sortedStatus = game.settings.get('sorted-status-effects', 'sortedStatusEffects');
     let tags = sortedStatus[statusId].tags || [];
@@ -212,4 +213,14 @@ export function onTagKeyDown(event) {
         }
     });
     d.render(true);
+}
+
+function on(element, type, selector, handler, capture = false) {
+    element.addEventListener(type, event => {
+        const actualTarget = event.target.closest(selector);
+        if (actualTarget) {
+            event.delegateTarget = actualTarget;
+            handler(event);
+        }
+    }, capture);
 }

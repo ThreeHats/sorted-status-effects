@@ -1,10 +1,9 @@
 import { registerKeybinds, onEffectKeyDown, onEffectKeyUp, onTagKeyDown } from "./scripts/keybindings.js";
 import { TagConfigurationDialog } from "./scripts/tag-configuration-dialog.js";
-import { changeHUD } from "./scripts/change-hud.js";
-import { on, stopEvent } from "./scripts/jsUtils.js";
 
 let sortedStatusEffects = {};
 let shownTags = [];
+let debug = false;
 
 export class SortedStatusEffects {
     static init() {
@@ -31,6 +30,14 @@ export class SortedStatusEffects {
             type: Object,
             default: {}
         });
+        game.settings.register('sorted-status-effects', 'debug', {
+            name: 'Debug',
+            scope: 'world',
+            config: true,
+            type: Boolean,
+            default: false,
+            requiresReload: true
+        });
 
         // Add menu setting for the configuration dialog
         game.settings.registerMenu('sorted-status-effects', 'tagConfig', {
@@ -47,11 +54,11 @@ export class SortedStatusEffects {
             hint: 'Toggle the effect when hovering over a status icon',
             editable: [{ key: 'KeyT' }],
             onDown: (context) => {
-                console.log('Keybinding pressed');
+                if (debug) console.log('Keybinding pressed');
                 onEffectKeyDown(context);
             },
             onUp: (context) => {
-                console.log('Keybinding released');
+                if (debug) console.log('Keybinding released');
                 onEffectKeyUp(context);
             },
             restricted: true
@@ -61,7 +68,7 @@ export class SortedStatusEffects {
             hint: 'Open the tagging menu',
             editable: [{ key: 'KeyQ' }],
             onDown: (context) => {
-                console.log('Keybinding pressed');
+                if (debug) console.log('Keybinding pressed');
                 onTagKeyDown(context);
             },
             restricted: true
@@ -75,10 +82,11 @@ export class SortedStatusEffects {
     }
     
     static ready() {
+        debug = game.settings.get('sorted-status-effects', 'debug');
     }
 
     static staticAlterHUD(html) {
-        console.log('alterHUD called: ', html);
+        if (debug) console.log('alterHUD called: ', html);
         // just test the styles
         $('#token-hud').toggleClass('sorted-status-effects');
 
@@ -86,8 +94,8 @@ export class SortedStatusEffects {
         const statusEffectsContainer = html.find('.status-effects');
         const statusIcons = statusEffectsContainer.children();
 
-        console.log('Sorted Status Effects | Status Effects Container:', statusEffectsContainer);
-        console.log('Sorted Status Effects | Status Icons:', statusIcons);
+        if (debug) console.log('Sorted Status Effects | Status Effects Container:', statusEffectsContainer);
+        if (debug) console.log('Sorted Status Effects | Status Icons:', statusIcons);
         
         // Get or initialize the sorted status effects object
         sortedStatusEffects = game.settings.get('sorted-status-effects', 'sortedStatusEffects');
@@ -106,7 +114,7 @@ export class SortedStatusEffects {
             ]);
         });
 
-        console.log('Sorted Status Effects | Base status effects:', baseStatusEffects);
+        if (debug) console.log('Sorted Status Effects | Base status effects:', baseStatusEffects);
 
         // Populate the sorted status effects object with the base status effects
         let effectIds = [];
@@ -123,14 +131,14 @@ export class SortedStatusEffects {
 
         for (const [key, value] of Object.entries(sortedStatusEffects)) {
             if (!effectIds.includes(key)) {
-                console.log('Sorted Status Effects | Deleting status effect:', key);
+                if (debug) console.log('Sorted Status Effects | Deleting status effect:', key);
                 delete sortedStatusEffects[key];
             } 
         }
 
         game.settings.set('sorted-status-effects', 'sortedStatusEffects', sortedStatusEffects);
 
-        console.log('Sorted Status Effects | Sorted status effects:', sortedStatusEffects);
+        if (debug) console.log('Sorted Status Effects | Sorted status effects:', sortedStatusEffects);
 
         let tags = game.settings.get('sorted-status-effects', 'statusEffectsTags');
         if (!tags) {
@@ -138,7 +146,7 @@ export class SortedStatusEffects {
             game.settings.set('sorted-status-effects', 'statusEffectsTags', tags);
         }
 
-        console.log('Sorted Status Effects | Tags:', tags);
+        if (debug) console.log('Sorted Status Effects | Tags:', tags);
 
         // check for illandril-token-hud-scale compatibility
         let size = 24;
@@ -169,7 +177,7 @@ export class SortedStatusEffects {
                     } else {
                         shownTags.splice(tagIndex, 1);
                     }
-                    console.log('Sorted Status Effects | Shown Tags:', shownTags);
+                    if (debug) console.log('Sorted Status Effects | Shown Tags:', shownTags);
                     // Re-render the HUD to apply the changes
                     canvas.tokens.hud.render();
                 });
@@ -179,7 +187,7 @@ export class SortedStatusEffects {
 
         // Apply order and hidden styling to the status icons
         statusIcons.each((index, icon) => {
-            console.log('Sorted Status Effects | Icon:', icon);
+            if (debug) console.log('Sorted Status Effects | Icon:', icon);
             const effectId = effectIds[index];
             const effect = sortedStatusEffects[effectId];
             if (effect) {
@@ -188,7 +196,7 @@ export class SortedStatusEffects {
                     $(icon).css('display', 'none');
                 }
                 if (effect.tags && effect.tags.length > 0) {
-                    console.log('Sorted Status Effects | Effect Tags:', effect.tags);
+                    if (debug) console.log('Sorted Status Effects | Effect Tags:', effect.tags);
                     let hide = true;
                     for (let tag of effect.tags) {
                         if (shownTags.includes(tag)) {
