@@ -1,5 +1,6 @@
 import { registerKeybinds, onEffectKeyDown } from "./scripts/keybindings.js";
 import { changeHUD } from "./scripts/change-hud.js";
+import { on } from "./scripts/jsUtils.js";
 
 let sortedStatusEffects = {};
 
@@ -23,9 +24,12 @@ export class SortedStatusEffects {
                 console.log('Keybinding pressed');
                 onEffectKeyDown(context);
             },
+            onUp: (context) => {
+                console.log('Keybinding released');
+            },
             restricted: true
         });
-        // Patch the TokenHUD _render method
+        // Patch the TokenHUD _render method using libWrapper for compatibility with other modules
         libWrapper.register('sorted-status-effects', 'TokenHUD.prototype._render', function (wrapped, ...args) {
             return wrapped(...args).then(() => {
                 SortedStatusEffects.staticAlterHUD(this.element);
@@ -43,52 +47,67 @@ export class SortedStatusEffects {
 
         // Replace the status icons with the sorted ones
         const statusEffectsContainer = html.find('.status-effects');
-        const statusIcons = statusEffectsContainer.children('.effect-control');
+        const statusIcons = statusEffectsContainer.children();
+
+        console.log('Sorted Status Effects | Status Effects Container:', statusEffectsContainer);
+        console.log('Sorted Status Effects | Status Icons:', statusIcons);
         
-        // Check for the sortedStatusEffects object
+        // Get or initialize the sorted status effects object
         sortedStatusEffects = game.settings.get('sorted-status-effects', 'sortedStatusEffects');
         if (!sortedStatusEffects) {
             sortedStatusEffects = {};
-            // Initialize the sortedStatusEffects object if it doesn't exist
-            const baseConditions = game.clt.conditions
-            let order = 0;
-            baseConditions.forEach(condition => {
-                sortedStatusEffects[condition.id] = { id: condition.id, name: condition.name, order: order++ };
-            });
-            game.settings.set('sorted-status-effects', 'sortedStatusEffects', sortedStatusEffects);
-        } else {
-            // Filter out any conditions that are no longer in the game and add new ones
-            const newConditions = game.clt.conditions;
-            const newSortedStatusEffects = {};
-            let order = 0;
-
-            newConditions.forEach(condition => {
-                if (sortedStatusEffects[condition.id]) {
-                    newSortedStatusEffects[condition.id] = sortedStatusEffects[condition.id];
-                    newSortedStatusEffects[condition.id].order = order++;
-                } else {
-                    newSortedStatusEffects[condition.id] = { id: condition.id, name: condition.name, order: order++ };
-                }
-            });
-
-            sortedStatusEffects = newSortedStatusEffects;
             game.settings.set('sorted-status-effects', 'sortedStatusEffects', sortedStatusEffects);
         }
 
-        // Create an array of status icons sorted by the order in sortedStatusEffects
-        const sortedIcons = statusIcons.toArray().sort((a, b) => {
-            const idA = $(a).data('status-id');
-            const idB = $(b).data('status-id');
-            const orderA = sortedStatusEffects[idA] ? sortedStatusEffects[idA].order : 0;
-            const orderB = sortedStatusEffects[idB] ? sortedStatusEffects[idB].order : 0;
-            return orderA - orderB;
+        let baseStatusEffects = [];
+        // This is the only real dependancy on the Condition Lab & Triggler module.
+        // Integrating with other modules is as simple as changing the way the baseStatusEffects object is populated.
+        game.clt.conditions.forEach((condition) => {
+            baseStatusEffects.push([
+                condition.id,
+                condition.hidden
+            ]);
         });
 
-        console.log('Sorted Status Effects | Sorted Status Effects:', sortedStatusEffects);
-        console.log('Sorted Status Effects | Sorted icons:', sortedIcons);
+        console.log('Sorted Status Effects | Base status effects:', baseStatusEffects);
 
-        // Append the sorted icons back to the container
-        statusEffectsContainer.empty().append(sortedIcons);
+        // Populate the sorted status effects object with the base status effects
+        let effectIds = [];
+        for (let i = 0; i < baseStatusEffects.length; i++) {
+            if (sortedStatusEffects[baseStatusEffects[i][0]] === undefined) {
+                sortedStatusEffects[baseStatusEffects[i][0]] = {
+                    order: i,
+                    hidden: baseStatusEffects[i][1]
+                };
+            } else {
+                sortedStatusEffects[baseStatusEffects[i][0]].order = i;
+                sortedStatusEffects[baseStatusEffects[i][0]].hidden = baseStatusEffects[i][1];
+            }
+            effectIds.push(baseStatusEffects[i][0]);
+        }
+
+        for (const [key, value] of Object.entries(sortedStatusEffects)) {
+            if (!effectIds.includes(key)) {
+                console.log('Sorted Status Effects | Deleting status effect:', key);
+                delete sortedStatusEffects[key];
+            } 
+        }
+
+        console.log('Sorted Status Effects | Sorted status effects:', sortedStatusEffects);
+
+        // Apply order and hidden styling to the status icons
+        statusIcons.each((index, icon) => {
+            console.log('Sorted Status Effects | Icon:', icon);
+            const effectId = effectIds[index];
+            const effect = sortedStatusEffects[effectId];
+            if (effect) {
+                $(icon).css('order', effect.order);
+                if (effect.hidden) {
+                    $(icon).css('display', 'none');
+                }
+            }
+        });
+
     }
 
 }
