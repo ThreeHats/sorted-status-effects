@@ -1,5 +1,4 @@
 #token-hud.sorted-status-effects .status-effects {
-    background: red !important;
     display: flex;
     flex-wrap: wrap;
 }

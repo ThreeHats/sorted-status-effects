@@ -1,4 +1,4 @@
-import { registerKeybinds, onEffectKeyDown } from "./scripts/keybindings.js";
+import { registerKeybinds, onEffectKeyDown, onEffectKeyUp } from "./scripts/keybindings.js";
 import { changeHUD } from "./scripts/change-hud.js";
 import { on } from "./scripts/jsUtils.js";
 
@@ -26,6 +26,7 @@ export class SortedStatusEffects {
             },
             onUp: (context) => {
                 console.log('Keybinding released');
+                onEffectKeyUp(context);
             },
             restricted: true
         });
@@ -77,11 +78,8 @@ export class SortedStatusEffects {
             if (sortedStatusEffects[baseStatusEffects[i][0]] === undefined) {
                 sortedStatusEffects[baseStatusEffects[i][0]] = {
                     order: i,
-                    hidden: baseStatusEffects[i][1]
+                    hidden: baseStatusEffects[i][1] === undefined ? false : baseStatusEffects[i][1]
                 };
-            } else {
-                sortedStatusEffects[baseStatusEffects[i][0]].order = i;
-                sortedStatusEffects[baseStatusEffects[i][0]].hidden = baseStatusEffects[i][1];
             }
             effectIds.push(baseStatusEffects[i][0]);
         }
@@ -92,6 +90,8 @@ export class SortedStatusEffects {
                 delete sortedStatusEffects[key];
             } 
         }
+
+        game.settings.set('sorted-status-effects', 'sortedStatusEffects', sortedStatusEffects);
 
         console.log('Sorted Status Effects | Sorted status effects:', sortedStatusEffects);
 
