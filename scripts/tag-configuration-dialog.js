@@ -28,6 +28,32 @@ export class TagConfigurationDialog extends FormApplication {
         };
     }
 
+    activateListeners(html) {
+        super.activateListeners(html);
+
+        // Add click handler for delete buttons
+        html.find('.delete-tag').click(this._onDeleteTag.bind(this));
+    }
+
+    async _onDeleteTag(event) {
+        event.preventDefault();
+        const index = event.currentTarget.dataset.index;
+        const tags = game.settings.get('sorted-status-effects', 'statusEffectsTags') || [];
+        const tagIcons = game.settings.get('sorted-status-effects', 'tagIcons') || {};
+        
+        // Remove the tag and its icon
+        const tagToRemove = tags[index];
+        tags.splice(index, 1);
+        delete tagIcons[tagToRemove];
+
+        // Save the updated settings
+        await game.settings.set('sorted-status-effects', 'statusEffectsTags', tags);
+        await game.settings.set('sorted-status-effects', 'tagIcons', tagIcons);
+
+        // Re-render the form
+        this.render();
+    }
+
     async _updateObject(event, formData) {
         const tags = [];
         const tagIcons = {};
@@ -51,10 +77,5 @@ export class TagConfigurationDialog extends FormApplication {
 
         await game.settings.set('sorted-status-effects', 'statusEffectsTags', tags);
         await game.settings.set('sorted-status-effects', 'tagIcons', tagIcons);
-        
-        // Force a re-render of any visible token HUDs
-        canvas.tokens.placeables.forEach(token => {
-            if (token.hasActiveHUD) token.hud.render();
-        });
     }
 }
