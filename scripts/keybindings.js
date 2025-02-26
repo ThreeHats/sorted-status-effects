@@ -84,10 +84,10 @@ export function onEffectKeyUp(event) {
     const statusOrder = sortedStatus[statusId]?.order;
     const targetOrder = sortedStatus[targetStatusId]?.order;
 
-    if (!statusOrder || !targetOrder) return
+    if (statusOrder === undefined || targetOrder === undefined) return;
 
-    // Determine the starting order for reordering
-    const startOrder = Math.min(statusOrder, targetOrder);
+    // Determine the range for reordering
+    const [startOrder, endOrder] = [Math.min(statusOrder, targetOrder), Math.max(statusOrder, targetOrder)];
 
     // Create a list of status effects to reorder
     const statusList = Object.entries(sortedStatus)
@@ -97,8 +97,8 @@ export function onEffectKeyUp(event) {
     // Reorder the status effects
     let count = startOrder;
     for (const status of statusList) {
-        if (status.order >= startOrder) {
-            sortedStatus[status.id].order = ++count;
+        if (status.order >= startOrder && status.order <= endOrder) {
+            sortedStatus[status.id].order = count++;
         }
     }
 
