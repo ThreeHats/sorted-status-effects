@@ -4,6 +4,7 @@
         <div id="tag-list">
             {{#each tags}}
             <div class="tag-entry flexrow">
+                <img class="tag-preview" src="{{this.icon}}" width="24" height="24"/>
                 <input type="text" name="tagName{{@index}}" value="{{this.name}}" placeholder="Tag Name"/>
                 <input type="text" name="tagIcon{{@index}}" value="{{this.icon}}" placeholder="Icon Path"/>
                 <button type="button" class="file-picker" data-type="imagevideo" data-target="tagIcon{{@index}}">
@@ -15,6 +16,7 @@
             </div>
             {{/each}}
             <div class="tag-entry flexrow">
+                <img class="tag-preview" src="icons/svg/d20.svg" width="24" height="24"/>
                 <input type="text" name="tagName{{tags.length}}" placeholder="New Tag Name"/>
                 <input type="text" name="tagIcon{{tags.length}}" placeholder="Icon Path"/>
                 <button type="button" class="file-picker" data-type="imagevideo" data-target="tagIcon{{tags.length}}">

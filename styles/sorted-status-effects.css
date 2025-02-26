@@ -30,3 +30,18 @@
 #tag-configuration .delete-tag:hover {
     text-shadow: 0 0 8px red;
 }
+
+#tag-configuration .tag-preview {
+    flex: 0 0 24px;
+    height: 24px;
+    border: none;
+    margin-right: 5px;
+}
+
+#tag-configuration .tag-entry input[name^="tagIcon"] {
+    flex: 2;
+}
+
+#tag-configuration .tag-entry input[name^="tagName"] {
+    flex: 1;
+}

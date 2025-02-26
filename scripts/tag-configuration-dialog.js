@@ -33,6 +33,18 @@ export class TagConfigurationDialog extends FormApplication {
 
         // Add click handler for delete buttons
         html.find('.delete-tag').click(this._onDeleteTag.bind(this));
+
+        // Add input handler for icon path changes
+        html.find('input[name^="tagIcon"]').on('change', this._onIconPathChange.bind(this));
+
+        // Initialize FilePicker with a single delegated handler
+        html.find('#tag-list').on('click', 'button.file-picker', async (event) => {
+            const fp = await FilePicker.browse('data', '', {type: 'imagevideo'});
+            if (fp.path) {
+                const input = $(event.currentTarget).siblings('input[name^="tagIcon"]');
+                input.val(fp.path).trigger('change');
+            }
+        });
     }
 
     async _onDeleteTag(event) {
@@ -52,6 +64,12 @@ export class TagConfigurationDialog extends FormApplication {
 
         // Re-render the form
         this.render();
+    }
+
+    _onIconPathChange(event) {
+        const input = event.currentTarget;
+        const preview = $(input).closest('.tag-entry').find('.tag-preview');
+        preview.attr('src', input.value || 'icons/svg/d20.svg');
     }
 
     async _updateObject(event, formData) {
