@@ -86,19 +86,25 @@ export function onEffectKeyUp(event) {
 
     if (statusOrder === undefined || targetOrder === undefined) return;
 
-    // Create a list of status effects to reorder
-    const statusList = Object.entries(sortedStatus)
-        .map(([key, value]) => ({ id: key, order: value.order }))
-        .sort((a, b) => a.order - b.order);
-
-    // Reorder the status effects
-    let count = 0;
-    for (const status of statusList) {
-        sortedStatus[status.id].order = ++count;
+    // If moving an item to a later position in the order
+    if (targetOrder < statusOrder) {
+        // Shift everything between target and status down by 1
+        for (const [key, value] of Object.entries(sortedStatus)) {
+            if (value.order > targetOrder && value.order <= statusOrder) {
+                value.order--;
+            }
+        }
+        sortedStatus[targetStatusId].order = statusOrder;
+    } else {
+        // If moving an item to an earlier position
+        // Shift everything between status and target up by 1
+        for (const [key, value] of Object.entries(sortedStatus)) {
+            if (value.order >= statusOrder && value.order < targetOrder) {
+                value.order++;
+            }
+        }
+        sortedStatus[targetStatusId].order = statusOrder;
     }
-
-    // Move the targetStatusId to the order of the statusId
-    sortedStatus[targetStatusId].order = statusOrder;
 
     game.settings.set('sorted-status-effects', 'sortedStatusEffects', sortedStatus);
 
