@@ -76,4 +76,4 @@ For questions, feature requests, or bug reports, please open an issue on the [Gi
 
 ## License
 
-This module is licensed under [LICENSE].
+This module is licensed under [GNU General Public License v3.0](https://github.com/JustAnotherIdea/sorted-status-effects/blob/main/LICENSE).
