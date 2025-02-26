@@ -128,21 +128,40 @@ export function onTagKeyDown(event) {
 
     let sortedStatus = game.settings.get('sorted-status-effects', 'sortedStatusEffects');
     let tags = sortedStatus[statusId].tags || [];
+    let tagIcons = game.settings.get('sorted-status-effects', 'tagIcons') || {};
 
     if (statusEffectsTags.length === 0) {
         statusEffectsTags = game.settings.get('sorted-status-effects', 'statusEffectsTags') || [];
     }
 
-    // Create the tagging menu dialog with checkboxes
-    let content = `<div><label>Available Tags:</label><ul>`;
+    // Create the tagging menu dialog with checkboxes and icons
+    let content = `<div><label>Available Tags:</label><ul style="list-style: none; padding-left: 0;">`;
     for (let tag of statusEffectsTags) {
         let checked = tags.includes(tag) ? 'checked' : '';
-        content += `<li><input type="checkbox" data-tag="${tag}" ${checked}/> ${tag}</li>`;
+        let iconSrc = tagIcons[tag] || 'icons/svg/d20.svg';
+        content += `
+            <li style="display: flex; align-items: center; gap: 5px; margin-bottom: 5px;">
+                <input type="checkbox" data-tag="${tag}" ${checked}/>
+                <img src="${iconSrc}" width="24" height="24" style="flex: 0 0 24px;"/>
+                <span style="flex: 1;">${tag}</span>
+            </li>`;
     }
-    content += `</ul><label>Add Tag:</label><input type="text" id="new-status-tag" /></div>`;
+    content += `</ul>
+        <div style="display: flex; gap: 5px; align-items: center;">
+            <label>Add Tag:</label>
+            <input type="text" id="new-status-tag" style="flex: 1;"/>
+        </div>
+        <div style="display: flex; gap: 5px; align-items: center; margin-top: 5px;">
+            <label>Icon:</label>
+            <input type="text" id="new-status-icon" style="flex: 1;" value="icons/svg/d20.svg"/>
+            <button type="button" class="file-picker" data-type="imagevideo" data-target="new-status-icon">
+                <i class="fas fa-file-import fa-fw"></i>
+            </button>
+        </div>
+    </div>`;
 
     let effectHud = activeEffectHud;
-    new Dialog({
+    let d = new Dialog({
         title: "Tagging Menu",
         content: content,
         buttons: {
@@ -150,9 +169,16 @@ export function onTagKeyDown(event) {
                 label: "Save Tags",
                 callback: (html) => {
                     let newTag = html.find('#new-status-tag').val();
+                    let newIcon = html.find('#new-status-icon').val();
                     if (newTag && !statusEffectsTags.includes(newTag)) {
                         statusEffectsTags.push(newTag);
                         game.settings.set('sorted-status-effects', 'statusEffectsTags', statusEffectsTags);
+                        
+                        // Save the icon for the new tag
+                        if (newIcon) {
+                            tagIcons[newTag] = newIcon;
+                            game.settings.set('sorted-status-effects', 'tagIcons', tagIcons);
+                        }
                     }
                     let selectedTags = [];
                     html.find('input[type="checkbox"]:checked').each(function() {
@@ -169,6 +195,23 @@ export function onTagKeyDown(event) {
                 label: "Close"
             }
         },
-        default: "save"
-    }).render(true);
+        default: "save",
+        render: (html) => {
+            // Initialize FilePicker for the icon input
+            const picker = html.find('button.file-picker');
+            picker.click((event) => {
+                const button = event.currentTarget;
+                const input = html.find(`#${button.dataset.target}`);
+                const fp = new FilePicker({
+                    type: button.dataset.type,
+                    current: input.val(),
+                    callback: path => {
+                        input.val(path);
+                    }
+                });
+                fp.browse();
+            });
+        }
+    });
+    d.render(true);
 }
