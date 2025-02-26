@@ -3,9 +3,8 @@
   "title": "Sorted Status Effects",
   "description": "Adds the ability to sort and tag status effects in the HUD and filter them based off those tags.",
   "version": "1.0.1",
-  "library": "false",
   "compatibility": {
-    "verified": 12
+    "verified": "12"
   },
   "authors": [
     {
@@ -15,17 +14,12 @@
     }
   ],
   "relationships": {
-    "systems": [],
     "requires": [
       {
-        "id": "lib-wrapper",
-        "name": "libWrapper",
-        "type": "module"
+        "id": "lib-wrapper"
       },
       {
-        "id": "condition-lab-triggler",
-        "name": "condition-lab-triggler",
-        "type": "module"
+        "id": "condition-lab-triggler"
       }
     ]
   },
