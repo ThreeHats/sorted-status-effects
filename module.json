@@ -19,11 +19,13 @@
     "requires": [
       {
         "id": "lib-wrapper",
-        "name": "libWrapper"
+        "name": "libWrapper",
+        "type": "module"
       },
       {
         "id": "condition-lab-triggler",
-        "name": "condition-lab-triggler"
+        "name": "condition-lab-triggler",
+        "type": "module"
       }
     ]
   },
