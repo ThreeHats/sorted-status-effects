@@ -2,3 +2,19 @@
     display: flex;
     flex-wrap: wrap;
 }
+
+#tag-configuration .tag-entry {
+    margin-bottom: 5px;
+    gap: 5px;
+}
+
+#tag-configuration .tag-entry input {
+    flex: 1;
+}
+
+#tag-configuration .file-picker {
+    flex: 0 0 24px;
+    height: 24px;
+    line-height: 24px;
+    margin: 0;
+}

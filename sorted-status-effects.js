@@ -1,4 +1,5 @@
 import { registerKeybinds, onEffectKeyDown, onEffectKeyUp, onTagKeyDown } from "./scripts/keybindings.js";
+import { TagConfigurationDialog } from "./scripts/tag-configuration-dialog.js";
 import { changeHUD } from "./scripts/change-hud.js";
 import { on, stopEvent } from "./scripts/jsUtils.js";
 
@@ -23,6 +24,23 @@ export class SortedStatusEffects {
             type: Object,
             default: undefined
         });
+        game.settings.register('sorted-status-effects', 'tagIcons', {
+            name: 'Tag Icons',
+            scope: 'world',
+            config: false,
+            type: Object,
+            default: {}
+        });
+
+        // Add menu setting for the configuration dialog
+        game.settings.registerMenu('sorted-status-effects', 'tagConfig', {
+            name: 'Configure Tags',
+            label: 'Configure Tags and Icons',
+            icon: 'fas fa-tags',
+            type: TagConfigurationDialog,
+            restricted: true
+        });
+
         // Register keybinding
         game.keybindings.register('sorted-status-effects', 'toggleEffect', {
             name: 'Toggle Effect',
@@ -129,30 +147,34 @@ export class SortedStatusEffects {
         }
 
         // Make icons for the tags
-        for (let tag of tags) {
-            let tagIcon = $(`<div class="status-wrapper"><img class="" 
-                style="
-                width: ${size}px;
-                height: ${size}px;
-                margin: 0;
-                padding: 0;
-                border: none;
-                opacity: ${shownTags.includes(tag) ? 1 : 0.5};" 
-                src="icons/svg/d20.svg" 
-                data-tooltip="${tag}"></div>`);
-            tagIcon.css('order', 0);
-            tagIcon.on('click', function(event) {
-                const tagIndex = shownTags.indexOf(tag);
-                if (tagIndex === -1) {
-                    shownTags.push(tag);
-                } else {
-                    shownTags.splice(tagIndex, 1);
-                }
-                console.log('Sorted Status Effects | Shown Tags:', shownTags);
-                // Re-render the HUD to apply the changes
-                canvas.tokens.hud.render();
-            });
-            statusEffectsContainer.append(tagIcon);
+        const tagIcons = game.settings.get('sorted-status-effects', 'tagIcons') || {};
+        if (tags.length > 0) {
+            for (let tag of tags) {
+                let iconSrc = tagIcons[tag] || 'icons/svg/d20.svg';
+                let tagIcon = $(`<div class="status-wrapper"><img class="" 
+                    style="
+                    width: ${size}px;
+                    height: ${size}px;
+                    margin: 0;
+                    padding: 0;
+                    border: none;
+                    opacity: ${shownTags.includes(tag) ? 1 : 0.5};" 
+                    src="${iconSrc}" 
+                    data-tooltip="${tag}"></div>`);
+                tagIcon.css('order', 0);
+                tagIcon.on('click', function(event) {
+                    const tagIndex = shownTags.indexOf(tag);
+                    if (tagIndex === -1) {
+                        shownTags.push(tag);
+                    } else {
+                        shownTags.splice(tagIndex, 1);
+                    }
+                    console.log('Sorted Status Effects | Shown Tags:', shownTags);
+                    // Re-render the HUD to apply the changes
+                    canvas.tokens.hud.render();
+                });
+                statusEffectsContainer.append(tagIcon);
+            }
         }
 
         // Apply order and hidden styling to the status icons

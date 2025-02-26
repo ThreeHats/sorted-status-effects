@@ -1,0 +1,26 @@
+<form>
+    <div class="form-group">
+        <label>Tags</label>
+        <div id="tag-list">
+            {{#each tags}}
+            <div class="tag-entry flexrow">
+                <input type="text" name="tagName{{@index}}" value="{{this.name}}" placeholder="Tag Name"/>
+                <input type="text" name="tagIcon{{@index}}" value="{{this.icon}}" placeholder="Icon Path"/>
+                <button type="button" class="file-picker" data-type="imagevideo" data-target="tagIcon{{@index}}">
+                    <i class="fas fa-file-import fa-fw"></i>
+                </button>
+            </div>
+            {{/each}}
+            <div class="tag-entry flexrow">
+                <input type="text" name="tagName{{tags.length}}" placeholder="New Tag Name"/>
+                <input type="text" name="tagIcon{{tags.length}}" placeholder="Icon Path"/>
+                <button type="button" class="file-picker" data-type="imagevideo" data-target="tagIcon{{tags.length}}">
+                    <i class="fas fa-file-import fa-fw"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    <button type="submit" name="submit">
+        <i class="far fa-save"></i> Save Changes
+    </button>
+</form>

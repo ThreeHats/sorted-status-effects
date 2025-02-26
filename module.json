@@ -22,7 +22,11 @@
     "sorted-status-effects.js",
     "scripts/change-hud.js",
     "scripts/keybindings.js",
-    "scripts/jsUtils.js"
+    "scripts/jsUtils.js",
+    "scripts/tag-configuration-dialog.js"
+  ],
+  "templates": [
+    "templates/tag-config.html"
   ],
   "styles": [
     "styles/sorted-status-effects.css"
