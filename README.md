@@ -35,7 +35,7 @@ A Foundry VTT module that enhances the Token HUD by adding the ability to sort a
 - [Visual Active Effects](https://foundryvtt.com/packages/visual-active-effects)
 
 ## Incompatibilities
-- If [Monk's Little Details](https://foundryvtt.com/packages/monks-little-details) "Alter the Token status HUD effects" must be disabled.
+- If [Monk's Little Details](https://foundryvtt.com/packages/monks-little-details) is active, "Alter the Token status HUD effects" must be disabled.
 - Any other module that alters the token status HUD appearance may break the module.
 
 ## Usage
