@@ -1,8 +1,9 @@
 import { registerKeybinds, onEffectKeyDown, onEffectKeyUp, onTagKeyDown } from "./scripts/keybindings.js";
 import { changeHUD } from "./scripts/change-hud.js";
-import { on } from "./scripts/jsUtils.js";
+import { on, stopEvent } from "./scripts/jsUtils.js";
 
 let sortedStatusEffects = {};
+let shownTags = [];
 
 export class SortedStatusEffects {
     static init() {
@@ -94,7 +95,7 @@ export class SortedStatusEffects {
         for (let i = 0; i < baseStatusEffects.length; i++) {
             if (sortedStatusEffects[baseStatusEffects[i][0]] === undefined) {
                 sortedStatusEffects[baseStatusEffects[i][0]] = {
-                    order: i,
+                    order: i+1,
                     hidden: baseStatusEffects[i][1] === undefined ? false : baseStatusEffects[i][1],
                     tag: []
                 };
@@ -121,7 +122,38 @@ export class SortedStatusEffects {
 
         console.log('Sorted Status Effects | Tags:', tags);
 
-        let shownTags = [];
+        // check for illandril-token-hud-scale compatibility
+        let size = 24;
+        if (game.modules.get('illandril-token-hud-scale') !== undefined && game.modules.get('illandril-token-hud-scale').active) {
+            size = 36;
+        }
+
+        // Make icons for the tags
+        for (let tag of tags) {
+            let tagIcon = $(`<div class="status-wrapper"><img class="" 
+                style="
+                width: ${size}px;
+                height: ${size}px;
+                margin: 0;
+                padding: 0;
+                border: none;
+                opacity: ${shownTags.includes(tag) ? 1 : 0.5};" 
+                src="icons/svg/d20.svg" 
+                data-tooltip="${tag}"></div>`);
+            tagIcon.css('order', 0);
+            tagIcon.on('click', function(event) {
+                const tagIndex = shownTags.indexOf(tag);
+                if (tagIndex === -1) {
+                    shownTags.push(tag);
+                } else {
+                    shownTags.splice(tagIndex, 1);
+                }
+                console.log('Sorted Status Effects | Shown Tags:', shownTags);
+                // Re-render the HUD to apply the changes
+                canvas.tokens.hud.render();
+            });
+            statusEffectsContainer.append(tagIcon);
+        }
 
         // Apply order and hidden styling to the status icons
         statusIcons.each((index, icon) => {

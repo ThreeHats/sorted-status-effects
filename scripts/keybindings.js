@@ -81,8 +81,10 @@ export function onEffectKeyUp(event) {
     console.log("SSE| Presorted:", sortedStatus);
 
     // Get the orders of the statusId and targetStatusId
-    const statusOrder = sortedStatus[statusId].order;
-    const targetOrder = sortedStatus[targetStatusId].order;
+    const statusOrder = sortedStatus[statusId]?.order;
+    const targetOrder = sortedStatus[targetStatusId]?.order;
+
+    if (!statusOrder || !targetOrder) return
 
     // Determine the starting order for reordering
     const startOrder = Math.min(statusOrder, targetOrder);
@@ -139,6 +141,7 @@ export function onTagKeyDown(event) {
     }
     content += `</ul><label>Add Tag:</label><input type="text" id="new-status-tag" /></div>`;
 
+    let effectHud = activeEffectHud;
     new Dialog({
         title: "Tagging Menu",
         content: content,
@@ -158,6 +161,8 @@ export function onTagKeyDown(event) {
                     sortedStatus[statusId].tags = selectedTags;
                     if (newTag) selectedTags.push(newTag);
                     game.settings.set('sorted-status-effects', 'sortedStatusEffects', sortedStatus);
+                    // Force a refresh of the status icons
+                    effectHud.render();
                 }
             },
             close: {
