@@ -45,3 +45,13 @@
 #tag-configuration .tag-entry input[name^="tagName"] {
     flex: 1;
 }
+
+#sse-active-status-effects-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    position: absolute;
+    top: 0;
+    right: -50%;
+    z-index: 100;
+}

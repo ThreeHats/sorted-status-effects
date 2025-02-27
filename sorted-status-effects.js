@@ -87,7 +87,7 @@ export class SortedStatusEffects {
 
     static staticAlterHUD(html) {
         if (debug) console.log('alterHUD called: ', html);
-        // just test the styles
+        // Add a class to the token HUD to allow for custom styling
         $('#token-hud').toggleClass('sorted-status-effects');
 
         // Replace the status icons with the sorted ones
@@ -128,6 +128,8 @@ export class SortedStatusEffects {
             }
             effectIds.push(baseStatusEffects[i][0]);
         }
+
+        if (debug) console.log('Sorted Status Effects | Effect IDs:', effectIds);
 
         for (const [key, value] of Object.entries(sortedStatusEffects)) {
             if (!effectIds.includes(key)) {
@@ -186,11 +188,46 @@ export class SortedStatusEffects {
         }
 
         // Apply order and hidden styling to the status icons
-        statusIcons.each((index, icon) => {
+        if (statusIcons.length !== effectIds.length) {
+            console.error('Sorted Status Effects | Status Icons and Effect IDs do not match:', statusIcons.length, effectIds.length);
+        }
+
+        // Get the selected token and its actor to check for status effects
+        const selectedToken = canvas.tokens.controlled[0];
+        const actor = selectedToken.actor;
+        const activeEffects = actor.statuses.entries().toArray().map(entry => entry[1]);
+        if (debug) console.log('Sorted Status Effects | Actor Effects:', activeEffects);
+
+        // Create a container for the active status effects
+        const activeStatusEffectsContainer = $('<div id="sse-active-status-effects-container"></div>');
+        activeStatusEffectsContainer.append('<div class="sse-active-status-effects-category" data-tag="Default"></div>');
+        for(let tag of tags) {
+            activeStatusEffectsContainer.append(`<div class="sse-active-status-effects-category" data-tag="${tag}"></div>`);
+        }
+        
+        // Sort the status icons based on the sorted status effects object
+        const statusIconsArray = Array.from(statusIcons); // Convert to array to prevent modification issues
+        statusIconsArray.forEach((icon, index) => {
             if (debug) console.log('Sorted Status Effects | Icon:', icon);
             const effectId = effectIds[index];
             const effect = sortedStatusEffects[effectId];
             if (effect) {
+                // If the effect is on the actor, make a copy of the effect to place in the container
+                if (activeEffects.find((actorEffect) => actorEffect.id === effectId)) {
+                    const actorEffect = activeEffects.find((actorEffect) => actorEffect.id === effectId);
+                    const actorEffectIcon = $(icon).clone();
+                    if (effect.tags && effect.tags.length > 0) {
+                        for (let tag of effect.tags) {
+                            const categoryContainer = activeStatusEffectsContainer.find(`.sse-active-status-effects-category[data-tag="${tag}"]`);
+                            categoryContainer.append(actorEffectIcon.clone());
+                        }
+                    } else {
+                        const categoryContainer = activeStatusEffectsContainer.find(`.sse-active-status-effects-category[data-tag="Default"]`);
+                        categoryContainer.append(actorEffectIcon);
+                    }
+                }
+
+                // Set the order and visibility of the original status icons
                 $(icon).css('order', effect.order);
                 if (effect.hidden) {
                     $(icon).css('display', 'none');
@@ -207,11 +244,13 @@ export class SortedStatusEffects {
                         $(icon).css('display', 'none');
                     }
                 }
+            } else {
+                console.error('Sorted Status Effects | Effect not found:', index, effectId);
             }
         });
-
+        // Add the container after processing all icons
+        statusEffectsContainer.append(activeStatusEffectsContainer);
     }
-
 }
 
 Hooks.once('init', async function() {
