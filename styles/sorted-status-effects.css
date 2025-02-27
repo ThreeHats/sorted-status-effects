@@ -1,6 +1,7 @@
 #token-hud.sorted-status-effects .status-effects {
     display: flex;
     flex-wrap: wrap;
+    gap: 2px
 }
 
 #tag-configuration .tag-entry {
@@ -48,10 +49,7 @@
 
 #sse-active-status-effects-container {
     display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
     position: absolute;
     top: 0;
-    right: -50%;
     z-index: 100;
 }

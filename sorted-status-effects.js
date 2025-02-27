@@ -38,6 +38,17 @@ export class SortedStatusEffects {
             default: false,
             requiresReload: true
         });
+        game.settings.register('sorted-status-effects', 'layoutOrientation', {
+            name: 'Layout Orientation',
+            scope: 'world',
+            config: true,
+            type: String,
+            choices: {
+                'horizontal': 'Horizontal',
+                'vertical': 'Vertical'
+            },
+            default: 'horizontal'
+        });
 
         // Add menu setting for the configuration dialog
         game.settings.registerMenu('sorted-status-effects', 'tagConfig', {
@@ -200,10 +211,15 @@ export class SortedStatusEffects {
 
         // Create a container for the active status effects
         const activeStatusEffectsContainer = $('<div id="sse-active-status-effects-container"></div>');
-        activeStatusEffectsContainer.append('<div class="sse-active-status-effects-category" data-tag="Default"></div>');
+        activeStatusEffectsContainer.append(`<div class="sse-active-status-effects-category" style="width: ${size};" data-tag="Default"></div>`);
         for(let tag of tags) {
-            activeStatusEffectsContainer.append(`<div class="sse-active-status-effects-category" data-tag="${tag}"></div>`);
+            activeStatusEffectsContainer.append(`<div class="sse-active-status-effects-category" style="width: ${size};" data-tag="${tag}"></div>`);
         }
+        const gap = 2;
+        const rightMargin = 5;
+        activeStatusEffectsContainer.css('gap', `${gap}px`);
+        activeStatusEffectsContainer.css('width', `${(size + gap) * (tags.length + 1)}px`);
+        activeStatusEffectsContainer.css('right', `-${(size + gap) * (tags.length + 1) + rightMargin}px`);
         
         // Sort the status icons based on the sorted status effects object
         const statusIconsArray = Array.from(statusIcons); // Convert to array to prevent modification issues
