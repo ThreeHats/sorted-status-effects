@@ -3,6 +3,7 @@
  */
 let activeEffectHud, activeEffectHudIcon, targetStatusId;
 let statusEffectsTags = [];
+let _dragIcon, _onMouseMove;
 
 /**
  * Applies keybinds to the given entity to change status counters. Which 
@@ -48,9 +49,6 @@ export function onEffectKeyDown(event) {
     let debug = game.settings.get('sorted-status-effects', 'debug');
     if (!activeEffectHud || !activeEffectHud.object.visible) return;
 
-    // let keyValue = parseInt(event.key);
-    // if (Number.isNaN(keyValue)) return;
-
     event.currentTarget = activeEffectHudIcon;
     const { statusId } = event.currentTarget.dataset;
 
@@ -58,7 +56,31 @@ export function onEffectKeyDown(event) {
 
     targetStatusId = statusId;
 
-    // stopEvent(event);
+    let size = 36;
+
+    // Create a transparent icon that will follow the mouse cursor
+    let icon = document.createElement('img');
+    icon.src = event.currentTarget.src;
+    icon.style.position = 'absolute';
+    icon.style.top = '0';
+    icon.style.left = '0';
+    icon.style.width = `${size}px`;
+    icon.style.height = `${size}px`;
+    icon.style.pointerEvents = 'none';
+    icon.style.zIndex = '9999';
+    document.body.appendChild(icon);
+
+    // Update the icon position to follow the mouse cursor
+    const onMouseMove = (event) => {
+        icon.style.top = `${event.clientY - (size/2)}px`;
+        icon.style.left = `${event.clientX - (size/2)}px`;
+    };
+
+    document.addEventListener('mousemove', onMouseMove);
+
+    // Store the icon and onMouseMove handler for cleanup in onEffectKeyUp
+    _dragIcon = icon;
+    _onMouseMove = onMouseMove;
 }
 
 /**
@@ -67,6 +89,10 @@ export function onEffectKeyDown(event) {
  * @param {jQuery.Event} event The key down event triggered by jQuery.
  */
 export function onEffectKeyUp(event) {
+    // Cleanup: remove the icon and event listeners
+    document.removeEventListener('mousemove', _onMouseMove);
+    document.body.removeChild(_dragIcon);
+
     let debug = game.settings.get('sorted-status-effects', 'debug');
     if (!activeEffectHud || !activeEffectHud.object.visible) return;
 
