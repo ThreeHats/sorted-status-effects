@@ -19,6 +19,10 @@ A Foundry VTT module that enhances the Token HUD by adding the ability to sort a
 - Customize tag icons through the module settings
 - Tags are visible in the Token HUD for quick filtering
 
+### Pinned Active Effects
+- Active effects are pinned to the corner of the effects HUD
+- Change the orientation of the layout in the settings menu
+
 ## Installation
 
 1. Inside Foundry VTT, select the Game Modules tab in the Configuration and Setup menu
