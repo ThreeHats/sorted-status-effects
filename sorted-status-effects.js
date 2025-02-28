@@ -30,14 +30,6 @@ export class SortedStatusEffects {
             type: Object,
             default: {}
         });
-        game.settings.register('sorted-status-effects', 'debug', {
-            name: 'Debug',
-            scope: 'world',
-            config: true,
-            type: Boolean,
-            default: false,
-            requiresReload: true
-        });
         game.settings.register('sorted-status-effects', 'layoutOrientation', {
             name: 'Layout Orientation',
             scope: 'world',
@@ -48,6 +40,14 @@ export class SortedStatusEffects {
                 'vertical': 'Vertical'
             },
             default: 'horizontal'
+        });
+        game.settings.register('sorted-status-effects', 'debug', {
+            name: 'Debug',
+            scope: 'world',
+            config: true,
+            type: Boolean,
+            default: false,
+            requiresReload: true
         });
 
         // Add menu setting for the configuration dialog
@@ -211,16 +211,23 @@ export class SortedStatusEffects {
 
         // Create a container for the active status effects
         const activeStatusEffectsContainer = $('<div id="sse-active-status-effects-container"></div>');
-        activeStatusEffectsContainer.append(`<div class="sse-active-status-effects-category" style="width: ${size};" data-tag="Default"></div>`);
+        activeStatusEffectsContainer.append(`<div class="sse-active-status-effects-category" data-tag="Default"></div>`);
         for(let tag of tags) {
-            activeStatusEffectsContainer.append(`<div class="sse-active-status-effects-category" style="width: ${size};" data-tag="${tag}"></div>`);
+            activeStatusEffectsContainer.append(`<div class="sse-active-status-effects-category" data-tag="${tag}"></div>`);
         }
         const gap = 2;
         const rightMargin = 5;
         activeStatusEffectsContainer.css('gap', `${gap}px`);
-        activeStatusEffectsContainer.css('width', `${(size + gap) * (tags.length + 1)}px`);
-        activeStatusEffectsContainer.css('right', `-${(size + gap) * (tags.length + 1) + rightMargin}px`);
-        
+        if (game.settings.get('sorted-status-effects', 'layoutOrientation') === 'vertical') {
+            activeStatusEffectsContainer.css('flex-direction', 'row');
+            activeStatusEffectsContainer.css('width', `${(size + gap) * (tags.length + 1)}px`);
+            activeStatusEffectsContainer.css('right', `-${(size + gap) * (tags.length + 1) + rightMargin}px`);
+            activeStatusEffectsContainer.find('.sse-active-status-effects-category').css('flex-direction', 'column');
+        } else {
+            activeStatusEffectsContainer.css('flex-direction', 'column');
+            activeStatusEffectsContainer.find('.sse-active-status-effects-category').css('flex-direction', 'row');
+        }
+
         // Sort the status icons based on the sorted status effects object
         const statusIconsArray = Array.from(statusIcons); // Convert to array to prevent modification issues
         statusIconsArray.forEach((icon, index) => {
@@ -264,6 +271,18 @@ export class SortedStatusEffects {
                 console.error('Sorted Status Effects | Effect not found:', index, effectId);
             }
         });
+
+        if (game.settings.get('sorted-status-effects', 'layoutOrientation') === 'horizontal') {
+            let maxEffects = 0;
+            activeStatusEffectsContainer.children().each((index, element) => {
+                const category = $(element);
+                if (category.children().length > maxEffects) {
+                    maxEffects = category.children().length;
+                }
+            });
+            activeStatusEffectsContainer.css('width', `${(size + gap) * maxEffects}px`);
+            activeStatusEffectsContainer.css('right', `-${(size + gap) * maxEffects + rightMargin}px`);
+        }
         // Add the container after processing all icons
         statusEffectsContainer.append(activeStatusEffectsContainer);
     }

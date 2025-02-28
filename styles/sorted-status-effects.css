@@ -53,3 +53,7 @@
     top: 0;
     z-index: 100;
 }
+
+.sse-active-status-effects-category {
+    display: flex;
+}
