@@ -101,9 +101,11 @@ export class SortedStatusEffects {
         // Add a class to the token HUD to allow for custom styling
         $('#token-hud').toggleClass('sorted-status-effects');
 
-        // Replace the status icons with the sorted ones
+        // Get the status effects container and the status icons
         const statusEffectsContainer = html.find('.status-effects');
-        const statusIcons = statusEffectsContainer.children();
+        let statusIcons = statusEffectsContainer.children().filter('.effect-control');
+        if (statusIcons.length === 0) statusIcons = statusEffectsContainer.children().filter('.status-wrapper');
+        if (statusIcons.length === 0) statusIcons = statusEffectsContainer.children().filter('.effect-container');
 
         if (debug) console.log('Sorted Status Effects | Status Effects Container:', statusEffectsContainer);
         if (debug) console.log('Sorted Status Effects | Status Icons:', statusIcons);
@@ -118,10 +120,32 @@ export class SortedStatusEffects {
         let baseStatusEffects = [];
         // This is the only real dependancy on the Condition Lab & Triggler module.
         // Integrating with other modules is as simple as changing the way the baseStatusEffects object is populated.
-        game.clt.conditions.forEach((condition) => {
+        // game.clt.conditions.forEach((condition) => {
+        //     baseStatusEffects.push([
+        //         condition.id,
+        //         condition.hidden
+        //     ]);
+        // });
+        statusIcons.each((index, icon) => {
+            let effectId = icon.dataset.statusId;
+            if (!effectId) {
+                effectId = icon.dataset.effectId;
+            }
+            if (!effectId) {
+                effectId = icon.children[0].dataset.statusId;
+            }
+            if (!effectId) {
+                effectId = icon.children[0].dataset.effectId;
+            }
+            if (!effectId) {
+                ui.notifications.error('Sorted Status Effects | NOT SORTING. Effect ID not found. Check the console for more information.');
+                console.error('Sorted Status Effects | Effect ID not found:', icon);
+                return;
+            }
+            if (debug) console.log('Sorted Status Effects | Icon:', icon);
             baseStatusEffects.push([
-                condition.id,
-                condition.hidden
+                effectId,
+                false
             ]);
         });
 
@@ -149,6 +173,17 @@ export class SortedStatusEffects {
             } 
         }
 
+        // Check if the status icons and effect IDs match
+        if (statusIcons.length !== effectIds.length) {
+            ui.notifications.error('Sorted Status Effects | NOT SORTING. Status Icons and Effect IDs do not match. Check your Condition Lab settings, and try removing default status effects. Check the console for more information.');
+            console.error('Sorted Status Effects | Status Icons and Effect IDs do not match:', statusIcons.length, effectIds.length);
+            console.error('Sorted Status Effects | Status Icons:', statusIcons);
+            console.error('Sorted Status Effects | Effect IDs:', effectIds);
+            console.error('Sorted Status Effects | Sorted Status Effects:', sortedStatusEffects);
+            console.error('Sorted Status Effects | Base Status Effects:', baseStatusEffects);
+            return;
+        }
+
         game.settings.set('sorted-status-effects', 'sortedStatusEffects', sortedStatusEffects);
 
         if (debug) console.log('Sorted Status Effects | Sorted status effects:', sortedStatusEffects);
@@ -161,15 +196,16 @@ export class SortedStatusEffects {
 
         if (debug) console.log('Sorted Status Effects | Tags:', tags);
 
-        // check for illandril-token-hud-scale compatibility
+        // check for illandril-token-hud-scale and monks-little-details compatibility
         let size = 24;
-        if (game.modules.get('illandril-token-hud-scale') !== undefined && game.modules.get('illandril-token-hud-scale').active) {
+        if (game.modules.get('illandril-token-hud-scale') !== undefined && game.modules.get('illandril-token-hud-scale').active && !game.settings.get('monks-little-details', 'alter-hud')) {
             size = 36;
         }
 
         // Make icons for the tags
         const tagIcons = game.settings.get('sorted-status-effects', 'tagIcons') || {};
         if (tags.length > 0) {
+            let count = 0;
             for (let tag of tags) {
                 let iconSrc = tagIcons[tag] || 'icons/svg/d20.svg';
                 let tagIcon = $(`<div class="status-wrapper"><img class="" 
@@ -195,18 +231,23 @@ export class SortedStatusEffects {
                     canvas.tokens.hud.render();
                 });
                 statusEffectsContainer.append(tagIcon);
+                if (game.settings.get('monks-little-details', 'alter-hud')) {
+                    tagIcon.css('position', 'absolute');
+                    tagIcon.css('top', `-${size}px`);
+                    tagIcon.css('left', `${size * count}px`);
+                };
+                count++;
             }
-        }
-
-        // Apply order and hidden styling to the status icons
-        if (statusIcons.length !== effectIds.length) {
-            console.error('Sorted Status Effects | Status Icons and Effect IDs do not match:', statusIcons.length, effectIds.length);
         }
 
         // Get the selected token and its actor to check for status effects
         const selectedToken = canvas.tokens.controlled[0];
         const actor = selectedToken.actor;
-        const activeEffects = actor.statuses.entries().toArray().map(entry => entry[1]);
+        let activeEffects = actor.statuses.entries().toArray().map(entry => entry[1]);
+        if (activeEffects.length > 0 && activeEffects[0] instanceof Object) {
+            // If the active effects are objects, get the IDs
+            activeEffects = activeEffects.map(effect => effect.id);
+        }
         if (debug) console.log('Sorted Status Effects | Actor Effects:', activeEffects);
 
         // Create a container for the active status effects
@@ -234,9 +275,10 @@ export class SortedStatusEffects {
             if (debug) console.log('Sorted Status Effects | Icon:', icon);
             const effectId = effectIds[index];
             const effect = sortedStatusEffects[effectId];
+            if (debug) console.log('Sorted Status Effects | Effect and ID:', effect, effectId);
             if (effect) {
                 // If the effect is on the actor, make a copy of the effect to place in the container
-                if (activeEffects.find((actorEffect) => actorEffect.id === effectId)) {
+                if (activeEffects.find((actorEffect) => actorEffect === effectId)) {
                     const actorEffect = activeEffects.find((actorEffect) => actorEffect.id === effectId);
                     const actorEffectIcon = $(icon).clone();
                     if (effect.tags && effect.tags.length > 0) {

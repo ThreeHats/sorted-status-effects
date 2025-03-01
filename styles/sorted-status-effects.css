@@ -57,3 +57,18 @@
 .sse-active-status-effects-category {
     display: flex;
 }
+
+/* monk's compatibility */
+
+#token-hud.monks-little-details .status-effects .effect-control {
+    width: 126px !important;
+}
+
+#token-hud.monks-little-details .status-effects #sse-active-status-effects-container .sse-active-status-effects-category  .effect-control {
+    width: 24px !important;
+    filter: unset;
+}
+
+#token-hud.monks-little-details.sorted-status-effects .status-effects {
+    width: 390px !important;
+}

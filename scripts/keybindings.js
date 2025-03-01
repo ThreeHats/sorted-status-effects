@@ -56,7 +56,11 @@ export function onEffectKeyDown(event) {
 
     targetStatusId = statusId;
 
-    let size = 36;
+    // check for illandril-token-hud-scale and monks-little-details compatibility
+    let size = 24;
+    if (game.modules.get('illandril-token-hud-scale') !== undefined && game.modules.get('illandril-token-hud-scale').active && !game.settings.get('monks-little-details', 'alter-hud')) {
+        size = 36;
+    }
 
     // Create a transparent icon that will follow the mouse cursor
     let icon = document.createElement('img');
