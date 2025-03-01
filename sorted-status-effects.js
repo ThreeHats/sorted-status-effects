@@ -337,11 +337,6 @@ Hooks.once('init', async function() {
         return;
     }
 
-    if (game.modules.get('condition-lab-triggler') === undefined) {
-        ui.notifications.error('Sorted Status Effects | Please enable the "Condition Lab & Triggler" module.');
-        return;
-    }
-
     console.log('Sorted Status Effects | Initializing Sorted Status Effects module');
     SortedStatusEffects.init();
 });
