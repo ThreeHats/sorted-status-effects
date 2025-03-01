@@ -4,6 +4,10 @@
 
 A Foundry VTT module that enhances the Token HUD by adding the ability to sort and tag status effects, making them more organized and easier to filter.
 
+![image](https://github.com/user-attachments/assets/65e39fb1-16ec-4b3d-80c6-c971727b5b8c)
+(pictured is also Condition Lab & Triggler, Illandril's Token HUD Scaler, and Monk's Little Details)
+
+
 ## Features
 
 ### Status Effect Sorting
@@ -31,16 +35,15 @@ A Foundry VTT module that enhances the Token HUD by adding the ability to sort a
 
 ## Required Modules
 - [libWrapper](https://foundryvtt.com/packages/lib-wrapper)
-- [Condition Lab & Triggler](https://foundryvtt.com/packages/condition-lab-triggler)
 
 ## Recommended Modules
+- [Condition Lab & Triggler](https://foundryvtt.com/packages/condition-lab-triggler)
 - [Illandril's Token HUD Scaler](https://foundryvtt.com/packages/illandril-token-hud-scale)
 - [Status Icon Counters](https://foundryvtt.com/packages/statuscounter)
 - [Visual Active Effects](https://foundryvtt.com/packages/visual-active-effects)
 
 ## Incompatibilities
-- If [Monk's Little Details](https://foundryvtt.com/packages/monks-little-details) is active, "Alter the Token status HUD effects" must be disabled.
-- Any other module that alters the token status HUD appearance may break the module.
+- Any module that alters the token status HUD appearance may break the module.
 
 ## Usage
 
@@ -72,7 +75,7 @@ A Foundry VTT module that enhances the Token HUD by adding the ability to sort a
 
 ## Compatibility
 - Tested with Foundry VTT v12
-- Compatible with Token HUD Scale module
+- Compatible with Token HUD Scale and Monk's Little Details modules
 
 ## Support
 
