@@ -5,6 +5,7 @@
 A Foundry VTT module that enhances the Token HUD by adding the ability to sort and tag status effects, making them more organized and easier to filter.
 
 ![image](https://github.com/user-attachments/assets/65e39fb1-16ec-4b3d-80c6-c971727b5b8c)
+(pictured is also Condition Lab & Triggler, Illandril's Token HUD Scaler, and Monk's Little Details)
 
 
 ## Features
