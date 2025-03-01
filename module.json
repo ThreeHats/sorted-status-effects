@@ -29,7 +29,8 @@
     "scripts/tag-configuration-dialog.js"
   ],
   "templates": [
-    "templates/tag-config.html"
+    "templates/tag-config.html",
+    "templates/reset-options.html"
   ],
   "styles": [
     "styles/sorted-status-effects.css"

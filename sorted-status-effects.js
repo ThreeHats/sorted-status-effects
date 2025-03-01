@@ -59,6 +59,49 @@ export class SortedStatusEffects {
             restricted: true
         });
 
+        // Add reset buttons in settings
+        game.settings.registerMenu('sorted-status-effects', 'resetOptions', {
+            name: 'Reset Options',
+            label: 'Reset Sorting and Tags',
+            icon: 'fas fa-cog',
+            type: class ResetOptionsDialog extends FormApplication {
+            static get defaultOptions() {
+                return mergeObject(super.defaultOptions, {
+                title: 'Reset Options',
+                id: 'reset-options',
+                template: "modules/sorted-status-effects/templates/reset-options.html",
+                width: 400
+                });
+            }
+            async _updateObject(event, formData) {
+                const confirmed = await Dialog.confirm({
+                title: "Reset Options",
+                content: "Are you sure you want to reset the selected options?",
+                yes: () => {
+                    if (formData.resetSort) {
+                    game.settings.set('sorted-status-effects', 'sortedStatusEffects', {});
+                    ui.notifications.info('Status effect sorting has been reset');
+                    }
+                    if (formData.resetTags) {
+                    game.settings.set('sorted-status-effects', 'statusEffectsTags', []);
+                    game.settings.set('sorted-status-effects', 'tagIcons', {});
+                    ui.notifications.info('Tags and icons have been reset');
+                    }
+                },
+                no: () => {},
+                defaultYes: false
+                });
+            }
+            getData() {
+                return {
+                resetSort: false,
+                resetTags: false
+                };
+            }
+            },
+            restricted: true
+        });
+
         // Register keybinding
         game.keybindings.register('sorted-status-effects', 'toggleEffect', {
             name: 'Toggle Effect',
