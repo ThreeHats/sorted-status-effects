@@ -354,13 +354,15 @@ export class SortedStatusEffects {
             const effect = sortedStatusEffects[effectId];
             if (debug) console.log('Sorted Status Effects | Effect and ID:', effect, effectId);
             if (effect) {
-                // If sibebar is in 'active' mode, then if the effect is on the actor, make a copy of the effect to place in the container
+                // If sidebar is in 'active' mode, then if the effect is on the actor, make a copy of the effect to place in the container
                 if (game.settings.get('sorted-status-effects', 'statusHudSidebarMode') === 'active') {
                     if (activeEffects.find((actorEffect) => actorEffect === effectId)) {
                         const actorEffect = activeEffects.find((actorEffect) => actorEffect.id === effectId);
                         const actorEffectIcon = $(icon).clone();
                         actorEffectIcon.css('height', `${size}px`);
                         actorEffectIcon.css('width', `${size}px`);
+                        const effectName = $(icon).find('.effect-name').text();
+                        actorEffectIcon.attr('data-tooltip', effectName);
                         if (effect.tags && effect.tags.length > 0) {
                             for (let tag of effect.tags) {
                                 const categoryContainer = activeStatusEffectsContainer.find(`.sse-active-status-effects-category[data-tag="${tag}"]`);
@@ -377,6 +379,8 @@ export class SortedStatusEffects {
                         const effectIcon = $(icon).clone();
                         effectIcon.css('height', `${size}px`);
                         effectIcon.css('width', `${size}px`);
+                        const effectName = $(icon).find('.effect-name').text();
+                        effectIcon.attr('data-tooltip', effectName);
                         if (effect.tags && effect.tags.length > 0) {
                             for (let tag of effect.tags) {
                                 if (shownTags.includes(tag)) {
