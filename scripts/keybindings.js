@@ -58,7 +58,11 @@ export function onEffectKeyDown(event) {
 
     // check for illandril-token-hud-scale and monks-little-details compatibility
     let size = 24;
-    if (game.modules.get('illandril-token-hud-scale') !== undefined && game.modules.get('illandril-token-hud-scale').active && !game.settings.get('monks-little-details', 'alter-hud')) {
+    if (game.modules.get('illandril-token-hud-scale') !== undefined && 
+    game.modules.get('illandril-token-hud-scale').active && 
+    !(game.modules.get('monks-little-details') !== undefined && 
+    game.modules.get('monks-little-details').active && 
+    game.settings.get('monks-little-details', 'alter-hud'))) {
         size = 36;
     }
 
