@@ -41,6 +41,24 @@ export class SortedStatusEffects {
             },
             default: 'horizontal'
         });
+        game.settings.register('sorted-status-effects', 'statusHudSidebarMode', {
+            name: 'Status HUD Sidebar Mode',
+            scope: 'world',
+            config: true,
+            type: String,
+            choices: {
+                'tags': 'Tagged Effects',
+                'active': 'Active Effects'
+            },
+            default: 'tags'
+        });
+        game.settings.register('sorted-status-effects', 'showAboveMonksLittleDetails', {
+            name: 'Move the status effect tag icons above the HUD with Monks Little Details alter-hud enabled',
+            scope: 'world',
+            config: true,
+            type: Boolean,
+            default: false
+        });
         game.settings.register('sorted-status-effects', 'debug', {
             name: 'Debug',
             scope: 'world',
@@ -255,8 +273,8 @@ export class SortedStatusEffects {
             let count = 0;
             for (let tag of tags) {
                 let iconSrc = tagIcons[tag] || 'icons/svg/d20.svg';
-                let tagIcon = $(`<div class="status-wrapper"><img class="" 
-                    style="
+                let tagIcon = $(`<div class="status-wrapper" style="${shownTags.includes(tag) ? 'border: 1px solid green;' : 'border: 1px solid #fff;'} border-radius: 4px;">
+                    <img class="" style="
                     width: ${size}px;
                     height: ${size}px;
                     margin: 0;
@@ -281,9 +299,19 @@ export class SortedStatusEffects {
                 if (game.modules.get('monks-little-details') !== undefined && 
                 game.modules.get('monks-little-details').active && 
                 game.settings.get('monks-little-details', 'alter-hud')) {
-                    tagIcon.css('position', 'absolute');
-                    tagIcon.css('top', `-${size}px`);
-                    tagIcon.css('left', `${size * count}px`);
+                    if (game.settings.get('sorted-status-effects', 'showAboveMonksLittleDetails')) {
+                        tagIcon.css('position', 'absolute');
+                        tagIcon.css('top', `-${size}px`);
+                        tagIcon.css('left', `${size * count}px`);
+                        tagIcon.css('width', `${size}px`)
+                        tagIcon.css('border-bottom', 'none');
+                        tagIcon.css('border-radius', '4px 4px 0px 0px')
+                        tagIcon.css('border-color', '#bbb')
+                        tagIcon.css('background', '#333')
+                    } else {
+                        // Add a text label to the tag icons
+                        tagIcon.append(`<div class="effect-name" style="${shownTags.includes(tag) ? 'opacity: 1' : ''}">${tag}</div>`);
+                    }
                 };
                 count++;
             }
@@ -305,7 +333,7 @@ export class SortedStatusEffects {
         for(let tag of tags) {
             activeStatusEffectsContainer.append(`<div class="sse-active-status-effects-category" data-tag="${tag}"></div>`);
         }
-        const gap = 2;
+        const gap = 1;
         const rightMargin = 5;
         activeStatusEffectsContainer.css('gap', `${gap}px`);
         if (game.settings.get('sorted-status-effects', 'layoutOrientation') === 'vertical') {
@@ -326,18 +354,37 @@ export class SortedStatusEffects {
             const effect = sortedStatusEffects[effectId];
             if (debug) console.log('Sorted Status Effects | Effect and ID:', effect, effectId);
             if (effect) {
-                // If the effect is on the actor, make a copy of the effect to place in the container
-                if (activeEffects.find((actorEffect) => actorEffect === effectId)) {
-                    const actorEffect = activeEffects.find((actorEffect) => actorEffect.id === effectId);
-                    const actorEffectIcon = $(icon).clone();
-                    if (effect.tags && effect.tags.length > 0) {
-                        for (let tag of effect.tags) {
-                            const categoryContainer = activeStatusEffectsContainer.find(`.sse-active-status-effects-category[data-tag="${tag}"]`);
-                            categoryContainer.append(actorEffectIcon.clone());
+                // If sibebar is in 'active' mode, then if the effect is on the actor, make a copy of the effect to place in the container
+                if (game.settings.get('sorted-status-effects', 'statusHudSidebarMode') === 'active') {
+                    if (activeEffects.find((actorEffect) => actorEffect === effectId)) {
+                        const actorEffect = activeEffects.find((actorEffect) => actorEffect.id === effectId);
+                        const actorEffectIcon = $(icon).clone();
+                        actorEffectIcon.css('height', `${size}px`);
+                        actorEffectIcon.css('width', `${size}px`);
+                        if (effect.tags && effect.tags.length > 0) {
+                            for (let tag of effect.tags) {
+                                const categoryContainer = activeStatusEffectsContainer.find(`.sse-active-status-effects-category[data-tag="${tag}"]`);
+                                categoryContainer.append(actorEffectIcon.clone());
+                            }
+                        } else {
+                            const categoryContainer = activeStatusEffectsContainer.find(`.sse-active-status-effects-category[data-tag="Default"]`);
+                            categoryContainer.append(actorEffectIcon);
                         }
-                    } else {
-                        const categoryContainer = activeStatusEffectsContainer.find(`.sse-active-status-effects-category[data-tag="Default"]`);
-                        categoryContainer.append(actorEffectIcon);
+                    }
+                } else {
+                    // If the effect is not hidden, clone the icon and add it to the container
+                    if (!effect.hidden) {
+                        const effectIcon = $(icon).clone();
+                        effectIcon.css('height', `${size}px`);
+                        effectIcon.css('width', `${size}px`);
+                        if (effect.tags && effect.tags.length > 0) {
+                            for (let tag of effect.tags) {
+                                if (shownTags.includes(tag)) {
+                                    const categoryContainer = activeStatusEffectsContainer.find(`.sse-active-status-effects-category[data-tag="${tag}"]`);
+                                    categoryContainer.append(effectIcon.clone());
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -349,9 +396,12 @@ export class SortedStatusEffects {
                 if (effect.tags && effect.tags.length > 0) {
                     if (debug) console.log('Sorted Status Effects | Effect Tags:', effect.tags);
                     let hide = true;
-                    for (let tag of effect.tags) {
-                        if (shownTags.includes(tag)) {
-                            hide = false;
+                    // Only show effects with tags in the sidebar if in 'tags' mode
+                    if (game.settings.get('sorted-status-effects', 'statusHudSidebarMode') === 'active') {
+                        for (let tag of effect.tags) {
+                            if (shownTags.includes(tag)) {
+                                hide = false;
+                            }
                         }
                     }
                     if (hide) {
