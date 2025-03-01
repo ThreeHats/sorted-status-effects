@@ -23,8 +23,11 @@ A Foundry VTT module that enhances the Token HUD by adding the ability to sort a
 - Customize tag icons through the module settings
 - Tags are visible in the Token HUD for quick filtering
 
-### Pinned Active Effects
-- Active effects are pinned to the corner of the effects HUD
+### Status Effect Sidebar Modes
+- "Active"
+  - Active effects are pinned to the corner of the effects HUD
+- "Tagged"
+  - Tagged effects are only shown in the sidebar
 - Change the orientation of the layout in the settings menu
 
 ## Installation
