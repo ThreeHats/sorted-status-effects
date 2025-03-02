@@ -273,7 +273,7 @@ export class SortedStatusEffects {
             let count = 0;
             for (let tag of tags) {
                 let iconSrc = tagIcons[tag] || 'icons/svg/d20.svg';
-                let tagIcon = $(`<div class="status-wrapper" style="${shownTags.includes(tag) ? 'border: 1px solid green;' : 'border: 1px solid #fff;'} border-radius: 4px;">
+                let tagIcon = $(`<div class="status-wrapper" data-tag-id="${tag}" style="${shownTags.includes(tag) ? 'border: 1px solid green;' : 'border: 1px solid #fff;'} border-radius: 4px;">
                     <img class="" style="
                     width: ${size}px;
                     height: ${size}px;
@@ -282,7 +282,8 @@ export class SortedStatusEffects {
                     border: none;
                     opacity: ${shownTags.includes(tag) ? 1 : 0.5};" 
                     src="${iconSrc}" 
-                    data-tooltip="${tag}"></div>`);
+                    data-tooltip="${tag}"
+                    data-is-tag="true"></div>`);
                 tagIcon.css('order', 0);
                 tagIcon.on('click', function(event) {
                     const tagIndex = shownTags.indexOf(tag);

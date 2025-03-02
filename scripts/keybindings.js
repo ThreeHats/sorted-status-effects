@@ -4,6 +4,7 @@
 let activeEffectHud, activeEffectHudIcon, targetStatusId;
 let statusEffectsTags = [];
 let _dragIcon, _onMouseMove;
+let isTagDrag = false;
 
 /**
  * Applies keybinds to the given entity to change status counters. Which 
@@ -18,6 +19,8 @@ export function registerKeybinds(entity, html) {
 
     on(effectHud, "mouseover", ".effect-control", onEffectMouseOver.bind(entity));
     on(effectHud, "mouseout", ".effect-control", onEffectMouseOut.bind(entity));
+    on(effectHud, "mouseover", ".status-wrapper", onEffectMouseOver.bind(entity));
+    on(effectHud, "mouseout", ".status-wrapper", onEffectMouseOut.bind(entity));
 }
 
 /**
@@ -47,12 +50,19 @@ function onEffectMouseOut() {
  */
 export function onEffectKeyDown(event) {
     let debug = game.settings.get('sorted-status-effects', 'debug');
-    if (!activeEffectHud || !activeEffectHud.object.visible) return;
+    // Check if we're dragging a tag by looking for data-is-tag on the img element
+    const imgElement = activeEffectHudIcon.querySelector('img');
+    isTagDrag = imgElement ? imgElement.dataset.isTag === "true" : false;
+
+    // For tags, we don't need to check activeEffectHud visibility
+    if (!isTagDrag && (!activeEffectHud || !activeEffectHud.object.visible)) return;
 
     event.currentTarget = activeEffectHudIcon;
-    const { statusId } = event.currentTarget.dataset;
+    const statusId = isTagDrag ? 
+        activeEffectHudIcon.dataset.tagId : 
+        (activeEffectHudIcon.dataset.statusId || activeEffectHudIcon.children[0]?.dataset.statusId);
 
-    if (debug) console.log("SSE| " + statusId);
+    if (debug) console.log("SSE| " + (isTagDrag ? "Tag: " : "Status: ") + statusId);
 
     targetStatusId = statusId;
 
@@ -66,9 +76,17 @@ export function onEffectKeyDown(event) {
         size = 36;
     }
 
-    // Create a transparent icon that will follow the mouse cursor
+    // Create drag icon
+    let iconSrc;
+    if (isTagDrag) {
+        const tagIcons = game.settings.get('sorted-status-effects', 'tagIcons') || {};
+        iconSrc = tagIcons[statusId] || 'icons/svg/d20.svg';
+    } else {
+        iconSrc = event.currentTarget.src;
+    }
+
     let icon = document.createElement('img');
-    icon.src = event.currentTarget.src;
+    icon.src = iconSrc;
     icon.style.position = 'absolute';
     icon.style.top = '0';
     icon.style.left = '0';
@@ -102,48 +120,72 @@ export function onEffectKeyUp(event) {
     document.body.removeChild(_dragIcon);
 
     let debug = game.settings.get('sorted-status-effects', 'debug');
-    if (!activeEffectHud || !activeEffectHud.object.visible) return;
+
+    // Get either status ID or tag ID of target
+    const imgElement = activeEffectHudIcon.querySelector('img');
+    const isTargetTag = imgElement ? imgElement.dataset.isTag === "true" : false;
+    
+    // Don't allow mixing tags and effects
+    if (isTagDrag !== isTargetTag) return;
+
+    if ((!activeEffectHud || !activeEffectHud.object.visible) && !isTagDrag) return;
 
     event.currentTarget = activeEffectHudIcon;
-    const { statusId } = event.currentTarget.dataset;
+    const statusId = isTagDrag ? 
+        activeEffectHudIcon.dataset.tagId : 
+        (activeEffectHudIcon.dataset.statusId || activeEffectHudIcon.children[0]?.dataset.statusId);
 
-    if (debug) console.log("SSE| " + statusId);
+    if (debug) console.log("SSE| " + (isTagDrag ? "Tag: " : "Status: ") + statusId);
 
     if (targetStatusId === statusId) return;
 
-    let sortedStatus = game.settings.get('sorted-status-effects', 'sortedStatusEffects');
-    if (debug) console.log("SSE| Presorted:", sortedStatus);
-
-    // Get the orders of the statusId and targetStatusId
-    const statusOrder = sortedStatus[statusId]?.order;
-    const targetOrder = sortedStatus[targetStatusId]?.order;
-
-    if (statusOrder === undefined || targetOrder === undefined) return;
-
-    // If moving an item to a later position in the order
-    if (targetOrder < statusOrder) {
-        // Shift everything between target and status down by 1
-        for (const [key, value] of Object.entries(sortedStatus)) {
-            if (value.order > targetOrder && value.order <= statusOrder) {
-                value.order--;
-            }
+    if (isTagDrag) {
+        // Handle tag reordering
+        let tags = game.settings.get('sorted-status-effects', 'statusEffectsTags') || [];
+        const fromIndex = tags.indexOf(targetStatusId);
+        const toIndex = tags.indexOf(statusId);
+        
+        if (fromIndex !== -1 && toIndex !== -1) {
+            // Remove tag from old position and insert at new position
+            tags.splice(fromIndex, 1);
+            tags.splice(toIndex, 0, targetStatusId);
+            game.settings.set('sorted-status-effects', 'statusEffectsTags', tags);
         }
-        sortedStatus[targetStatusId].order = statusOrder;
     } else {
-        // If moving an item to an earlier position
-        // Shift everything between status and target up by 1
-        for (const [key, value] of Object.entries(sortedStatus)) {
-            if (value.order >= statusOrder && value.order < targetOrder) {
-                value.order++;
+
+        let sortedStatus = game.settings.get('sorted-status-effects', 'sortedStatusEffects');
+        if (debug) console.log("SSE| Presorted:", sortedStatus);
+
+        // Get the orders of the statusId and targetStatusId
+        const statusOrder = sortedStatus[statusId]?.order;
+        const targetOrder = sortedStatus[targetStatusId]?.order;
+
+        if (statusOrder === undefined || targetOrder === undefined) return;
+
+        // If moving an item to a later position in the order
+        if (targetOrder < statusOrder) {
+            // Shift everything between target and status down by 1
+            for (const [key, value] of Object.entries(sortedStatus)) {
+                if (value.order > targetOrder && value.order <= statusOrder) {
+                    value.order--;
+                }
             }
+            sortedStatus[targetStatusId].order = statusOrder;
+        } else {
+            // If moving an item to an earlier position
+            // Shift everything between status and target up by 1
+            for (const [key, value] of Object.entries(sortedStatus)) {
+                if (value.order >= statusOrder && value.order < targetOrder) {
+                    value.order++;
+                }
+            }
+            sortedStatus[targetStatusId].order = statusOrder;
         }
-        sortedStatus[targetStatusId].order = statusOrder;
+
+        game.settings.set('sorted-status-effects', 'sortedStatusEffects', sortedStatus);
+
+        if (debug) console.log("SSE| Postsorted:", sortedStatus);
     }
-
-    game.settings.set('sorted-status-effects', 'sortedStatusEffects', sortedStatus);
-
-    if (debug) console.log("SSE| Postsorted:", sortedStatus);
-
     // Force a refresh of the status icons
     activeEffectHud.render();
 }
