@@ -52,6 +52,19 @@ export class SortedStatusEffects {
             },
             default: 'tags'
         });
+        game.settings.register('sorted-status-effects', 'sidebarOpacity', {
+            name: 'Sidebar Opacity',
+            hint: 'Controls the opacity of the status effects sidebar (0.1-1.0)',
+            scope: 'world',
+            config: true,
+            type: Number,
+            range: {
+                min: 0.1,
+                max: 1.0,
+                step: 0.1
+            },
+            default: 1.0
+        });
         game.settings.register('sorted-status-effects', 'showAboveMonksLittleDetails', {
             name: 'Move the status effect tag icons above the HUD with Monks Little Details alter-hud enabled',
             scope: 'world',
@@ -346,7 +359,9 @@ export class SortedStatusEffects {
             activeStatusEffectsContainer.css('flex-direction', 'column');
             activeStatusEffectsContainer.find('.sse-active-status-effects-category').css('flex-direction', 'row');
         }
-
+        
+        // Add opacity setting
+        const opacity = game.settings.get('sorted-status-effects', 'sidebarOpacity');
         // Sort the status icons based on the sorted status effects object
         const statusIconsArray = Array.from(statusIcons); // Convert to array to prevent modification issues
         statusIconsArray.forEach((icon, index) => {
@@ -364,7 +379,8 @@ export class SortedStatusEffects {
                         actorEffectIcon.css('width', `${size}px`);
                         const effectName = $(icon).find('.effect-name').text();
                         actorEffectIcon.attr('data-tooltip', effectName);
-                        actorEffectIcon.css('order', `${effect.order}`)
+                        actorEffectIcon.css('order', `${effect.order}`);
+                        actorEffectIcon.find('img').css('opacity', opacity);
                         if (effect.tags && effect.tags.length > 0) {
                             for (let tag of effect.tags) {
                                 const categoryContainer = activeStatusEffectsContainer.find(`.sse-active-status-effects-category[data-tag="${tag}"]`);
@@ -383,7 +399,8 @@ export class SortedStatusEffects {
                         effectIcon.css('width', `${size}px`);
                         const effectName = $(icon).find('.effect-name').text();
                         effectIcon.attr('data-tooltip', effectName);
-                        effectIcon.css('order', `${effect.order}`)
+                        effectIcon.css('order', `${effect.order}`);
+                        effectIcon.find('img').css('opacity', opacity);
                         if (effect.tags && effect.tags.length > 0) {
                             for (let tag of effect.tags) {
                                 if (shownTags.includes(tag)) {
