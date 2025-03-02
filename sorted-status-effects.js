@@ -380,7 +380,7 @@ export class SortedStatusEffects {
                         const effectName = $(icon).find('.effect-name').text();
                         actorEffectIcon.attr('data-tooltip', effectName);
                         actorEffectIcon.css('order', `${effect.order}`);
-                        actorEffectIcon.find('img').css('opacity', opacity);
+                        actorEffectIcon.css('opacity', opacity);
                         if (effect.tags && effect.tags.length > 0) {
                             for (let tag of effect.tags) {
                                 const categoryContainer = activeStatusEffectsContainer.find(`.sse-active-status-effects-category[data-tag="${tag}"]`);
@@ -397,10 +397,20 @@ export class SortedStatusEffects {
                         const effectIcon = $(icon).clone();
                         effectIcon.css('height', `${size}px`);
                         effectIcon.css('width', `${size}px`);
-                        const effectName = $(icon).find('.effect-name').text();
+                        let effectName = effectIcon.find('.effect-name').text();
+                        if (!effectName) {
+                            const statusId = effectIcon.data('statusId') || effectIcon.data('effectId');
+                            if (game.clt && game.clt.conditions) {
+                                const condition = game.clt.conditions.find(cond => cond.id === statusId);
+                                if (condition) {
+                                    effectName = condition.name;
+                                }
+                            }
+                        }
+                        if (debug) console.log(`Sorted Status Effects | Adding ${effectName} to sidebar`, effectIcon)
                         effectIcon.attr('data-tooltip', effectName);
                         effectIcon.css('order', `${effect.order}`);
-                        effectIcon.find('img').css('opacity', opacity);
+                        effectIcon.css('opacity', opacity);
                         if (effect.tags && effect.tags.length > 0) {
                             for (let tag of effect.tags) {
                                 if (shownTags.includes(tag)) {
