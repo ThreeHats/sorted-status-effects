@@ -272,12 +272,19 @@ export class SortedStatusEffects {
 
         // check for illandril-token-hud-scale and monks-little-details compatibility
         let size = 24;
+        let sizeW = 24;
         if (game.modules.get('illandril-token-hud-scale') !== undefined && 
         game.modules.get('illandril-token-hud-scale').active && 
         !(game.modules.get('monks-little-details') !== undefined && 
         game.modules.get('monks-little-details').active && 
         game.settings.get('monks-little-details', 'alter-hud'))) {
             size = 36;
+        }
+        if (!game.settings.get('sorted-status-effects', 'showAboveMonksLittleDetails') &&
+        game.modules.get('monks-little-details') !== undefined && 
+        game.modules.get('monks-little-details').active && 
+        game.settings.get('monks-little-details', 'alter-hud')) {
+            sizeW = 126;
         }
 
         // Make icons for the tags
@@ -286,7 +293,11 @@ export class SortedStatusEffects {
             let count = 0;
             for (let tag of tags) {
                 let iconSrc = tagIcons[tag] || 'icons/svg/d20.svg';
-                let tagIcon = $(`<div class="status-wrapper" data-tag-id="${tag}" style="${shownTags.includes(tag) ? 'border: 1px solid green;' : 'border: 1px solid #fff;'} border-radius: 4px;">
+                let tagIcon = $(`<div class="status-wrapper" data-tag-id="${tag}" style="
+                    ${shownTags.includes(tag) ? 'border: 1px solid green;' : 'border: 1px solid #fff;'} 
+                    border-radius: 4px;
+                    width: ${sizeW}px;
+                    height: ${size}px;">
                     <img class="" style="
                     width: ${size}px;
                     height: ${size}px;
