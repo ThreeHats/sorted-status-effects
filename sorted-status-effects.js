@@ -363,6 +363,7 @@ export class SortedStatusEffects {
                         actorEffectIcon.css('width', `${size}px`);
                         const effectName = $(icon).find('.effect-name').text();
                         actorEffectIcon.attr('data-tooltip', effectName);
+                        actorEffectIcon.css('order', `${effect.order}`)
                         if (effect.tags && effect.tags.length > 0) {
                             for (let tag of effect.tags) {
                                 const categoryContainer = activeStatusEffectsContainer.find(`.sse-active-status-effects-category[data-tag="${tag}"]`);
@@ -381,6 +382,7 @@ export class SortedStatusEffects {
                         effectIcon.css('width', `${size}px`);
                         const effectName = $(icon).find('.effect-name').text();
                         effectIcon.attr('data-tooltip', effectName);
+                        effectIcon.css('order', `${effect.order}`)
                         if (effect.tags && effect.tags.length > 0) {
                             for (let tag of effect.tags) {
                                 if (shownTags.includes(tag)) {
