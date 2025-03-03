@@ -279,6 +279,7 @@ export class SortedStatusEffects {
         game.modules.get('monks-little-details').active && 
         game.settings.get('monks-little-details', 'alter-hud'))) {
             size = 36;
+            sizeW = 36;
         }
         if (!game.settings.get('sorted-status-effects', 'showAboveMonksLittleDetails') &&
         game.modules.get('monks-little-details') !== undefined && 
