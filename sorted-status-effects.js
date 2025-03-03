@@ -422,7 +422,8 @@ export class SortedStatusEffects {
                         if (debug) console.log(`Sorted Status Effects | Adding ${effectName} to sidebar`, effectIcon)
                         effectIcon.attr('data-tooltip', effectName);
                         effectIcon.css('order', `${effect.order}`);
-                        effectIcon.css('opacity', opacity);
+                        let activeOpacity = activeEffects.find((actorEffect) => actorEffect === effectId) ? 1 : opacity;
+                        effectIcon.css('opacity', activeOpacity);
                         if (effect.tags && effect.tags.length > 0) {
                             for (let tag of effect.tags) {
                                 if (shownTags.includes(tag)) {
