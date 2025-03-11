@@ -45,3 +45,60 @@
 #tag-configuration .tag-entry input[name^="tagName"] {
     flex: 1;
 }
+
+#sse-active-status-effects-container {
+    display: flex;
+    position: absolute;
+    top: 0;
+    z-index: 100;
+}
+
+.sse-active-status-effects-category {
+    display: flex;
+}
+
+/* monk's compatibility */
+
+#token-hud.monks-little-details.sorted-status-effects .status-effects {
+    gap: 2px
+}
+
+#token-hud.monks-little-details .status-effects .status-wrapper {
+    display: flex;
+}
+
+#token-hud.monks-little-details.sorted-status-effects .status-effects .status-wrapper .effect-name {
+    color: #ccc;
+    left: auto;
+    position: relative;
+}
+
+#token-hud.monks-little-details .status-effects .effect-control, #token-hud.monks-little-details .status-effects .status-wrapper {
+    width: 126px;
+}
+
+#token-hud.monks-little-details .status-effects .status-wrapper {
+    padding: 1px;
+    margin-right: 2px;
+}
+
+#token-hud.monks-little-details .status-effects #sse-active-status-effects-container .sse-active-status-effects-category  .effect-control {
+    width: 24px !important;
+    filter: unset;
+}
+
+#token-hud.monks-little-details.sorted-status-effects .status-effects {
+    width: 390px !important;
+}
+
+#token-hud.monks-little-details.sorted-status-effects .status-effects > div {
+    height: 24px;
+}
+
+#token-hud.monks-little-details.sorted-status-effects .status-effects > .status-wrapper > img {
+    margin-top: -2px !important;
+}
+
+#token-hud.monks-little-details.sorted-status-effects .status-effects .status-wrapper:hover > * {
+    opacity: 1 !important;
+}

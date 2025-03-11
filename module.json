@@ -2,7 +2,7 @@
   "id": "sorted-status-effects",
   "title": "Sorted Status Effects",
   "description": "Adds the ability to sort and tag status effects in the HUD and filter them based off those tags.",
-  "version": "1.0.1",
+  "version": "#{VERSION}#",
   "compatibility": {
     "verified": 12
   },
@@ -20,11 +20,6 @@
         "id": "lib-wrapper",
         "name": "libWrapper",
         "type": "module"
-      },
-      {
-        "id": "condition-lab-triggler",
-        "name": "condition-lab-triggler",
-        "type": "module"
       }
     ]
   },
@@ -34,7 +29,8 @@
     "scripts/tag-configuration-dialog.js"
   ],
   "templates": [
-    "templates/tag-config.html"
+    "templates/tag-config.html",
+    "templates/reset-options.html"
   ],
   "styles": [
     "styles/sorted-status-effects.css"
