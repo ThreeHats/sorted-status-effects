@@ -82,7 +82,8 @@ A Foundry VTT module that enhances the Token HUD by adding the ability to sort a
 
 ## Support
 
-For questions, feature requests, or bug reports, please open an issue on the [GitHub repository](https://github.com/ThreeHats/sorted-status-effects).
+For bug reports, please open an issue on the [GitHub repository](https://github.com/ThreeHats/sorted-status-effects).
+Join the [discord](https://discord.gg/HUzEnZy8uJ) for extra support and discussions.
 
 ## License
 
