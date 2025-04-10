@@ -85,7 +85,7 @@ jobs:
           draft: false
           prerelease: false
           token: ${{ secrets.GITHUB_TOKEN }}
-          artifacts: "./dist/module.json, ./dist/module.zip"
+          artifacts: "./module.json, ./module.zip"
           tag: ${{ github.ref_name }}
           body: ${{ env.RELEASE_NOTES }}
 
@@ -99,7 +99,7 @@ jobs:
               "version": "${{steps.get_version.outputs.version}}",
               "manifest": "https://github.com/${{github.repository}}/releases/download/${{github.ref_name}}/module.json",
               "notes": "https://github.com/${{github.repository}}/releases/tag/${{github.ref_name}}",
-              "compatibility": $(jq -r '.compatibility' dist/module.json)
+              "compatibility": $(jq -r '.compatibility' module.json)
             }
           }
           EOF
