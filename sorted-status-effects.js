@@ -361,15 +361,23 @@ export class SortedStatusEffects {
         }
         const gap = 1;
         const rightMargin = 5;
-        activeStatusEffectsContainer.css('gap', `${gap}px`);
+        // Remove the gap from the container level
         if (game.settings.get('sorted-status-effects', 'layoutOrientation') === 'vertical') {
             activeStatusEffectsContainer.css('flex-direction', 'row');
             activeStatusEffectsContainer.css('width', `${(size + gap) * (tags.length + 1)}px`);
             activeStatusEffectsContainer.css('right', `-${(size + gap) * (tags.length + 1) + rightMargin}px`);
-            activeStatusEffectsContainer.find('.sse-active-status-effects-category').css('flex-direction', 'column');
+            // Apply gap only within categories
+            activeStatusEffectsContainer.find('.sse-active-status-effects-category').css({
+                'flex-direction': 'column',
+                'gap': `${gap}px`
+            });
         } else {
             activeStatusEffectsContainer.css('flex-direction', 'column');
-            activeStatusEffectsContainer.find('.sse-active-status-effects-category').css('flex-direction', 'row');
+            // Apply gap only within categories
+            activeStatusEffectsContainer.find('.sse-active-status-effects-category').css({
+                'flex-direction': 'row',
+                'gap': `${gap}px`
+            });
         }
         
         // Add opacity setting
@@ -462,14 +470,40 @@ export class SortedStatusEffects {
 
         if (game.settings.get('sorted-status-effects', 'layoutOrientation') === 'horizontal') {
             let maxEffects = 0;
+            let nonEmptyCategories = 0;
             activeStatusEffectsContainer.children().each((index, element) => {
                 const category = $(element);
-                if (category.children().length > maxEffects) {
-                    maxEffects = category.children().length;
+                if (category.children().length > 0) {
+                    nonEmptyCategories++;
+                    if (category.children().length > maxEffects) {
+                        maxEffects = category.children().length;
+                    }
                 }
             });
-            activeStatusEffectsContainer.css('width', `${(size + gap) * maxEffects}px`);
-            activeStatusEffectsContainer.css('right', `-${(size + gap) * maxEffects + rightMargin}px`);
+            if (maxEffects > 0) {
+                activeStatusEffectsContainer.css('width', `${(size + gap) * maxEffects}px`);
+                activeStatusEffectsContainer.css('right', `-${(size + gap) * maxEffects + rightMargin}px`);
+            } else {
+                // If no effects are shown, collapse the container
+                activeStatusEffectsContainer.css('width', '0');
+                activeStatusEffectsContainer.css('right', '0');
+            }
+        } else {
+            // For vertical layout, adjust width based on non-empty categories
+            let nonEmptyCategories = 0;
+            activeStatusEffectsContainer.children().each((index, element) => {
+                if ($(element).children().length > 0) {
+                    nonEmptyCategories++;
+                }
+            });
+            if (nonEmptyCategories > 0) {
+                activeStatusEffectsContainer.css('width', `${(size + gap) * nonEmptyCategories}px`);
+                activeStatusEffectsContainer.css('right', `-${(size + gap) * nonEmptyCategories + rightMargin}px`);
+            } else {
+                // If no effects are shown, collapse the container
+                activeStatusEffectsContainer.css('width', '0');
+                activeStatusEffectsContainer.css('right', '0');
+            }
         }
         // Add the container after processing all icons
         statusEffectsContainer.append(activeStatusEffectsContainer);

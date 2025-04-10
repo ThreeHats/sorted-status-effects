@@ -55,6 +55,21 @@
 
 .sse-active-status-effects-category {
     display: flex;
+    margin: 0; /* Remove any default margins */
+}
+
+/* Hide empty categories completely */
+.sse-active-status-effects-category:empty {
+    width: 0 !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden;
+}
+
+/* Remove any margins between categories */
+.sse-active-status-effects-category + .sse-active-status-effects-category {
+    margin: 0;
 }
 
 /* monk's compatibility */
