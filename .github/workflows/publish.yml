@@ -74,7 +74,6 @@ jobs:
           DOWNLOAD: ${{ env.release_module_url }}
 
       - name: Create zip archive
-        working-directory: dist
         run: zip -r ./module.zip module.json sorted-status-effects.js styles/ scripts/ templates/ languages/
 
       - name: Create GitHub Release
