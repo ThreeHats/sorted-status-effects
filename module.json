@@ -4,6 +4,7 @@
   "description": "Adds the ability to sort and tag status effects in the HUD and filter them based off those tags.",
   "version": "#{VERSION}#",
   "compatibility": {
+    "minimum": 11,
     "verified": 12
   },
   "authors": [
