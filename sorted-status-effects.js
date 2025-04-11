@@ -482,7 +482,10 @@ export class SortedStatusEffects {
             });
             if (maxEffects > 0) {
                 activeStatusEffectsContainer.css('width', `${(size + gap) * maxEffects}px`);
-                activeStatusEffectsContainer.css('right', `-${(size + gap) * maxEffects + rightMargin}px`);
+                const cappedMaxEffects = Math.min(maxEffects, 8);
+                activeStatusEffectsContainer.css('width', `${(size + gap) * cappedMaxEffects}px`);
+                activeStatusEffectsContainer.css('right', `-${(size + gap) * cappedMaxEffects + rightMargin}px`);
+                activeStatusEffectsContainer.css('max-width', '300px');
             } else {
                 // If no effects are shown, collapse the container
                 activeStatusEffectsContainer.css('width', '0');
@@ -498,7 +501,7 @@ export class SortedStatusEffects {
             });
             if (nonEmptyCategories > 0) {
                 activeStatusEffectsContainer.css('width', `${(size + gap) * nonEmptyCategories}px`);
-                activeStatusEffectsContainer.css('right', `-${(size + gap) * nonEmptyCategories + rightMargin}px`);
+                activeStatusEffectsContainer.css('left', `162px`);
             } else {
                 // If no effects are shown, collapse the container
                 activeStatusEffectsContainer.css('width', '0');
