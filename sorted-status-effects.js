@@ -200,6 +200,22 @@ export class SortedStatusEffects {
 
         // Get the status effects container and the status icons
         const statusEffectsContainer = html.find('.status-effects');
+        
+        // Add a search container at the top
+        const searchContainer = $(`
+            <div id="sse-search-container">
+                <input type="text" id="sse-search-input" placeholder="Search effects..." />
+                <i class="fas fa-search" id="sse-search-icon"></i>
+            </div>
+        `);
+        statusEffectsContainer.prepend(searchContainer);
+        
+        // Add event listener to the search input
+        $('#sse-search-input').on('input', function() {
+            const searchTerm = $(this).val().toLowerCase().replace(/\s+/g, '');
+            SortedStatusEffects.filterStatusEffects(searchTerm);
+        });
+        
         let statusIcons = statusEffectsContainer.children().filter('.effect-control');
         if (statusIcons.length === 0) statusIcons = statusEffectsContainer.children().filter('.status-wrapper');
         if (statusIcons.length === 0) statusIcons = statusEffectsContainer.children().filter('.effect-container');
@@ -533,6 +549,288 @@ export class SortedStatusEffects {
         }
         // Add the container after processing all icons
         statusEffectsContainer.append(activeStatusEffectsContainer);
+    }
+
+    // Add this static method to handle the filtering logic
+    static filterStatusEffects(searchTerm) {
+        if (debug) console.log('Filtering by search term:', searchTerm);
+        const statusEffectsContainer = $('#token-hud').find('.status-effects');
+        
+        // Get all status effect icons (exclude the tag icons and our UI elements)
+        const statusIcons = statusEffectsContainer.children().filter(function() {
+            return ($(this).hasClass('effect-control') || 
+                   $(this).hasClass('status-wrapper') || 
+                   $(this).hasClass('effect-container')) && 
+                   !$(this).attr('data-tag-id');
+        });
+        
+        // Get tag icons in the main area
+        const tagIcons = statusEffectsContainer.children().filter(function() {
+            return $(this).attr('data-tag-id');
+        });
+        
+        // Get tag icons in the above-HUD container (when showAboveHud is true)
+        const aboveHudTagIcons = $('#sse-tag-icon-container').children().filter(function() {
+            return $(this).attr('data-tag-id');
+        });
+        
+        // Get tag categories in the sidebar
+        const categories = $('#sse-active-status-effects-container').children('.sse-active-status-effects-category');
+        
+        // Track which tags have matching effects (to ensure their categories are shown)
+        let tagsWithMatchingEffects = [];
+        
+        if (searchTerm === '') {
+            // If search is empty, restore original display states
+            statusIcons.each(function() {
+                const icon = $(this);
+                // Remove our temp search classes
+                icon.removeClass('sse-filtered-out sse-search-highlight sse-search-match');
+                
+                // If this was an icon we temporarily showed during search, re-hide it
+                if (icon.data('wasHidden')) {
+                    icon.css('display', 'none');
+                    icon.removeData('wasHidden');
+                }
+            });
+            
+            // Clear classes from main area tag icons
+            tagIcons.each(function() {
+                $(this).removeClass('sse-filtered-out sse-search-highlight sse-search-match');
+            });
+            
+            // Also clear classes from above-HUD tag icons
+            aboveHudTagIcons.each(function() {
+                $(this).removeClass('sse-filtered-out sse-search-highlight sse-search-match');
+            });
+            
+            categories.each(function() {
+                $(this).removeClass('sse-filtered-out sse-search-highlight sse-search-match');
+                
+                // Also remove highlight classes from all children
+                $(this).find('*').removeClass('sse-search-highlight sse-search-match');
+            });
+            
+            // Remove any temporary effects we added for search
+            $('.sse-temp-search-effect').remove();
+            return;
+        }
+        
+        // First pass: identify tags with matching effects
+        statusIcons.each(function() {
+            const icon = $(this);
+            let effectId = icon.data('statusId') || icon.data('effectId');
+            
+            if (!effectId && icon.children(0).length) {
+                effectId = icon.children(0).data('statusId') || icon.children(0).data('effectId');
+            }
+            
+            // Get effect tags if available
+            const effect = sortedStatusEffects[effectId];
+            if (!effect || !effect.tags || effect.tags.length === 0) return;
+            
+            const tooltip = icon.attr('data-tooltip') || '';
+            const effectName = icon.find('.effect-name').text() || '';
+            const normalizedName = (tooltip + ' ' + effectName).toLowerCase().replace(/\s+/g, '');
+            
+            // Check if effect matches search by name
+            const matchesName = normalizedName.includes(searchTerm);
+            
+            // Check if effect matches search by tag
+            const matchesTags = effect.tags.some(tag => 
+                tag.toLowerCase().replace(/\s+/g, '').includes(searchTerm)
+            );
+            
+            // If this effect matches the search, mark all its tags
+            if (matchesName || matchesTags) {
+                effect.tags.forEach(tag => {
+                    if (!tagsWithMatchingEffects.includes(tag)) {
+                        tagsWithMatchingEffects.push(tag);
+                    }
+                });
+            }
+        });
+        
+        // Process status icons - show normally hidden ones if they match search
+        statusIcons.each(function() {
+            const icon = $(this);
+            const tooltip = icon.attr('data-tooltip') || '';
+            const effectName = icon.find('.effect-name').text() || '';
+            let effectId = icon.data('statusId') || icon.data('effectId');
+            
+            if (!effectId && icon.children(0)) {
+                effectId = icon.children(0).data('statusId') || icon.children(0).data('effectId');
+            }
+            
+            // Get effect tags if available
+            let effectTags = [];
+            const effect = sortedStatusEffects[effectId];
+            if (effect && effect.tags) {
+                effectTags = effect.tags;
+            }
+            
+            // Normalize text for search (remove spaces, lowercase)
+            const normalizedName = (tooltip + ' ' + effectName).toLowerCase().replace(/\s+/g, '');
+            
+            // Check if effect matches search by name
+            const matchesName = normalizedName.includes(searchTerm);
+            
+            // Check if effect matches search by tag
+            let matchesTags = false;
+            if (effectTags.length > 0) {
+                matchesTags = effectTags.some(tag => 
+                    tag.toLowerCase().replace(/\s+/g, '').includes(searchTerm));
+            }
+            
+            // Show/hide based on search match
+            if (matchesName || matchesTags) {
+                icon.removeClass('sse-filtered-out');
+                
+                // If normally hidden due to tag filtering, show it while searching
+                if (icon.css('display') === 'none') {
+                    // Mark that this was hidden so we can re-hide it when search is cleared
+                    icon.data('wasHidden', true);
+                    icon.css('display', '');
+                }
+            } else {
+                icon.addClass('sse-filtered-out');
+            }
+        });
+        
+        // Function to process tag icons (used for both main area and above-HUD)
+        const processTagIcon = function(tagIcon) {
+            const tagId = tagIcon.attr('data-tag-id') || '';
+            const normalizedTagId = tagId.toLowerCase().replace(/\s+/g, '');
+            
+            // Show tag if it matches search term OR if any effect in this category matches
+            if (normalizedTagId.includes(searchTerm) || tagsWithMatchingEffects.includes(tagId)) {
+                tagIcon.removeClass('sse-filtered-out');
+                // Highlight the tag if it has matching effects but doesn't match directly
+                if (tagsWithMatchingEffects.includes(tagId) && !normalizedTagId.includes(searchTerm)) {
+                    tagIcon.addClass('sse-search-highlight');
+                } else {
+                    tagIcon.removeClass('sse-search-highlight');
+                }
+            } else {
+                tagIcon.addClass('sse-filtered-out');
+            }
+        };
+        
+        // Process tag icons in main area
+        tagIcons.each(function() {
+            processTagIcon($(this));
+        });
+        
+        // Process tag icons in above-HUD container
+        aboveHudTagIcons.each(function() {
+            processTagIcon($(this));
+        });
+        
+        // Process category sections in sidebar
+        categories.each(function() {
+            const category = $(this);
+            const tagId = category.attr('data-tag') || '';
+            const normalizedTagId = tagId.toLowerCase().replace(/\s+/g, '');
+            
+            // Show category if tag matches OR if any of its effects match search
+            const tagDirectlyMatches = normalizedTagId.includes(searchTerm);
+            const tagHasMatchingEffects = tagsWithMatchingEffects.includes(tagId);
+            
+            if (tagDirectlyMatches || tagHasMatchingEffects) {
+                category.removeClass('sse-filtered-out');
+                
+                // Highlight the category if it has matching effects but doesn't match directly
+                if (tagHasMatchingEffects && !tagDirectlyMatches) {
+                    category.addClass('sse-search-highlight');
+                } else {
+                    category.removeClass('sse-search-highlight');
+                }
+                
+                // Process children
+                category.children().each(function() {
+                    const child = $(this);
+                    const tooltip = child.attr('data-tooltip') || '';
+                    const effectName = child.find('.effect-name').text() || '';
+                    const normalizedEffectName = (tooltip + ' ' + effectName).toLowerCase().replace(/\s+/g, '');
+                    
+                    if (normalizedEffectName.includes(searchTerm)) {
+                        child.removeClass('sse-filtered-out');
+                        child.addClass('sse-search-match'); // Mark as direct match
+                    } else {
+                        child.addClass('sse-filtered-out');
+                        child.removeClass('sse-search-match');
+                    }
+                });
+            } else {
+                category.addClass('sse-filtered-out');
+                category.removeClass('sse-search-highlight');
+            }
+        });
+        
+        // Create and display matching status effects from normally hidden categories
+        if (searchTerm !== '' && statusIcons.length > 0 && statusIcons instanceof Array) {
+            statusIcons.forEach((icon, index) => {
+                const $icon = $(icon);
+                let effectId = $icon.data('statusId') || $icon.data('effectId');
+                
+                if (!effectId && $icon.children(0).length) {
+                    effectId = $icon.children(0).data('statusId') || $icon.children(0).data('effectId');
+                }
+                
+                const effect = sortedStatusEffects[effectId];
+                
+                // Skip if effect doesn't exist or doesn't have tags
+                if (!effect || !effect.tags || effect.tags.length === 0) return;
+                
+                const tooltip = $icon.attr('data-tooltip') || '';
+                const effectName = $icon.find('.effect-name').text() || '';
+                const normalizedName = (tooltip + ' ' + effectName).toLowerCase().replace(/\s+/g, '');
+                
+                // Check if should be shown in search (matches name or tag)
+                const matchesName = normalizedName.includes(searchTerm);
+                const matchesTags = effect.tags.some(tag => 
+                    tag.toLowerCase().replace(/\s+/g, '').includes(searchTerm));
+                
+                if (matchesName || matchesTags) {
+                    // For each tag of this effect
+                    effect.tags.forEach(tag => {
+                        // Always show the effect in its category during search if it matches
+                        const categoryContainer = $('#sse-active-status-effects-container')
+                            .find(`.sse-active-status-effects-category[data-tag="${tag}"]`);
+                        
+                        if (categoryContainer.length) {
+                            // Show the category while searching
+                            categoryContainer.removeClass('sse-filtered-out');
+                            
+                            // Check if we need to create a temporary copy of this effect in the category
+                            const existingEffect = categoryContainer.find(`[data-status-id="${effectId}"], [data-effect-id="${effectId}"]`);
+                            
+                            if (existingEffect.length === 0) {
+                                const effectIcon = $icon.clone();
+                                effectIcon.css('height', `24px`); // Use standard size
+                                effectIcon.css('width', `24px`);
+                                effectIcon.attr('data-tooltip', effectName || tooltip);
+                                effectIcon.css('order', `${effect.order}`);
+                                effectIcon.addClass('sse-temp-search-effect'); // Mark as temporary
+                                
+                                // Add visual highlight for matched effects
+                                if (matchesName) {
+                                    effectIcon.addClass('sse-search-match');
+                                }
+                                
+                                categoryContainer.append(effectIcon);
+                            } else {
+                                // If it exists but is filtered out, show it
+                                existingEffect.removeClass('sse-filtered-out');
+                                if (matchesName) {
+                                    existingEffect.addClass('sse-search-match');
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+        }
     }
 }
 

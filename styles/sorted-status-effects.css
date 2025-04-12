@@ -141,3 +141,62 @@
 #token-hud.monks-little-details.sorted-status-effects .status-effects .status-wrapper:hover > * {
     opacity: 1 !important;
 }
+
+#sse-search-container {
+    position: relative;
+    width: 100%;
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+}
+
+#sse-search-input {
+    width: 100%;
+    padding: 4px 24px 4px 6px;
+    background: rgba(0, 0, 0, 0.2);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    font-size: 12px;
+    line-height: 1;
+}
+
+#sse-search-input:focus {
+    box-shadow: 0 0 5px #ff6400;
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+#sse-search-icon {
+    position: absolute;
+    right: 6px;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 12px;
+    pointer-events: none;
+}
+
+/* Hidden class for filtered-out elements */
+.sse-filtered-out {
+    display: none !important;
+}
+
+/* Search highlight effects */
+.sse-search-highlight {
+    background-color: rgba(255, 180, 0, 0.15) !important; /* Subtle amber highlight for categories */
+    border-color: rgba(255, 180, 0, 0.5) !important;
+}
+
+.sse-search-match {
+    box-shadow: 0 0 8px #ff6400 !important; /* Glow effect for direct matches */
+    border-color: #ff6400 !important;
+    z-index: 10; /* Ensure matched effects appear above others */
+}
+
+.sse-temp-search-effect {
+    animation: fadeIn 0.3s ease-in; /* Smooth fade-in for dynamically added items */
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
