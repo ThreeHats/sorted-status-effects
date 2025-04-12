@@ -281,6 +281,9 @@ export class SortedStatusEffects {
             size = 36;
             sizeW = 36;
         }
+        // create a new div for the tag icons above the hud
+        const tagIconContainer = $(`<div id="sse-tag-icon-container"></div>`);
+        statusEffectsContainer.append(tagIconContainer);
         if (!game.settings.get('sorted-status-effects', 'showAboveMonksLittleDetails') &&
         game.modules.get('monks-little-details') !== undefined && 
         game.modules.get('monks-little-details').active && 
@@ -321,15 +324,11 @@ export class SortedStatusEffects {
                     // Re-render the HUD to apply the changes
                     canvas.tokens.hud.render();
                 });
-                statusEffectsContainer.append(tagIcon);
                 if (game.modules.get('monks-little-details') !== undefined && 
                 game.modules.get('monks-little-details').active && 
                 game.settings.get('monks-little-details', 'alter-hud')) {
+                    tagIconContainer.append(tagIcon);
                     if (game.settings.get('sorted-status-effects', 'showAboveMonksLittleDetails')) {
-                        tagIcon.css('position', 'absolute');
-                        tagIcon.css('top', `-${size}px`);
-                        tagIcon.css('left', `${size * count}px`);
-                        tagIcon.css('width', `${size}px`)
                         tagIcon.css('border-bottom', 'none');
                         tagIcon.css('border-radius', '4px 4px 0px 0px')
                         tagIcon.css('border-color', '#bbb')
@@ -338,6 +337,8 @@ export class SortedStatusEffects {
                         // Add a text label to the tag icons
                         tagIcon.append(`<div class="effect-name" style="${shownTags.includes(tag) ? 'opacity: 1' : ''}">${tag}</div>`);
                     }
+                } else {
+                    statusEffectsContainer.append(tagIcon);
                 };
                 count++;
             }
@@ -365,7 +366,6 @@ export class SortedStatusEffects {
         if (game.settings.get('sorted-status-effects', 'layoutOrientation') === 'vertical') {
             activeStatusEffectsContainer.css('flex-direction', 'row');
             activeStatusEffectsContainer.css('width', `${(size + gap) * (tags.length + 1)}px`);
-            activeStatusEffectsContainer.css('right', `-${(size + gap) * (tags.length + 1) + rightMargin}px`);
             // Apply gap only within categories
             activeStatusEffectsContainer.find('.sse-active-status-effects-category').css({
                 'flex-direction': 'column',
@@ -484,12 +484,10 @@ export class SortedStatusEffects {
                 activeStatusEffectsContainer.css('width', `${(size + gap) * maxEffects}px`);
                 const cappedMaxEffects = Math.min(maxEffects, 8);
                 activeStatusEffectsContainer.css('width', `${(size + gap) * cappedMaxEffects}px`);
-                activeStatusEffectsContainer.css('right', `-${(size + gap) * cappedMaxEffects + rightMargin}px`);
                 activeStatusEffectsContainer.css('max-width', '300px');
             } else {
                 // If no effects are shown, collapse the container
                 activeStatusEffectsContainer.css('width', '0');
-                activeStatusEffectsContainer.css('right', '0');
             }
         } else {
             // For vertical layout, adjust width based on non-empty categories
@@ -501,11 +499,9 @@ export class SortedStatusEffects {
             });
             if (nonEmptyCategories > 0) {
                 activeStatusEffectsContainer.css('width', `${(size + gap) * nonEmptyCategories}px`);
-                activeStatusEffectsContainer.css('left', `162px`);
             } else {
                 // If no effects are shown, collapse the container
                 activeStatusEffectsContainer.css('width', '0');
-                activeStatusEffectsContainer.css('right', '0');
             }
         }
         // Add the container after processing all icons

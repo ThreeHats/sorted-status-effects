@@ -4,6 +4,21 @@
     gap: 2px;
 }
 
+#sse-tag-icon-container {
+    position: absolute;
+    bottom: 100%;
+    display: flex;
+    flex-wrap: wrap-reverse;
+}
+
+#token-hud.sorted-status-effects.monks-little-details #sse-tag-icon-container {
+    width: 300px;
+}
+
+#token-hud.sorted-status-effects.monks-little-details .status-effects {
+    min-height: 40px;
+}
+
 #tag-configuration .tag-entry {
     margin-bottom: 5px;
     gap: 5px;
@@ -52,6 +67,7 @@
     position: absolute;
     top: 0;
     z-index: 100;
+    left: 100%;
 }
 
 .sse-active-status-effects-category {
@@ -96,7 +112,7 @@
     flex: 0 0 auto; /* Prevent icons from stretching */
 }
 
-#token-hud.monks-little-details .status-effects .status-wrapper {
+#token-hud.monks-little-details:not(:has(#sse-tag-icon-container)) .status-effects .status-wrapper {
     padding: 1px;
     margin-right: 2px;
 }
