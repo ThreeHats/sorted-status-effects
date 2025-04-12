@@ -326,6 +326,8 @@ export class SortedStatusEffects {
         // check for illandril-token-hud-scale and monks-little-details compatibility
         let size = 24;
         let sizeW = 24;
+        const monksLittleDetails = game.modules.get('monks-little-details') !== undefined && game.modules.get('monks-little-details').active;
+        const monksLittleDetailsAlterHud = monksLittleDetails && game.settings.get('monks-little-details', 'alter-hud');
         if (game.modules.get('illandril-token-hud-scale') !== undefined && 
         game.modules.get('illandril-token-hud-scale').active && 
         !(game.modules.get('monks-little-details') !== undefined && 
@@ -383,11 +385,11 @@ export class SortedStatusEffects {
                     tagIcon.css('border-radius', '4px 4px 0px 0px')
                     tagIcon.css('border-color', '#bbb')
                     tagIcon.css('background', '#333')
-                    if (!game.settings.get('monks-little-details', 'alter-hud')) {
+                    if (!monksLittleDetailsAlterHud) {
                         tagIcon.css('width', '38px');
                     }
                 } else {
-                    if (game.settings.get('monks-little-details', 'alter-hud')) {
+                    if (monksLittleDetailsAlterHud) {
                         // Add a text label to the tag icons
                         tagIcon.append(`<div class="effect-name" style="${shownTags.includes(tag) ? 'opacity: 1' : ''}">${tag}</div>`);
                     }
