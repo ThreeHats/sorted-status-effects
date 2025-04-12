@@ -94,6 +94,20 @@ export class SortedStatusEffects {
             type: Boolean,
             default: true
         });
+        
+        game.settings.register('sorted-status-effects', 'aboveHudDisplay', {
+            name: 'Above HUD Display Mode',
+            hint: 'Choose what to display in the above HUD area when "Move icons above HUD" is enabled',
+            scope: 'world',
+            config: true,
+            type: String,
+            choices: {
+                'tags': 'Tag Categories',
+                'active': 'Active Effects'
+            },
+            default: 'tags'
+        });
+        
         game.settings.register('sorted-status-effects', 'debug', {
             name: 'Debug',
             scope: 'world',
@@ -229,6 +243,9 @@ export class SortedStatusEffects {
         let statusIcons = statusEffectsContainer.children().filter('.effect-control');
         if (statusIcons.length === 0) statusIcons = statusEffectsContainer.children().filter('.status-wrapper');
         if (statusIcons.length === 0) statusIcons = statusEffectsContainer.children().filter('.effect-container');
+        
+        // Convert status icons to array early to make it available throughout the function
+        const statusIconsArray = Array.from(statusIcons);
 
         if (debug) console.log('Sorted Status Effects | Status Effects Container:', statusEffectsContainer);
         if (debug) console.log('Sorted Status Effects | Status Icons:', statusIcons);
@@ -346,6 +363,20 @@ export class SortedStatusEffects {
             sizeW = 126;
         }
 
+        // Get the selected token and its actor to check for status effects
+        const selectedToken = canvas.tokens.controlled[0];
+        const actor = selectedToken.actor;
+        let activeEffects = actor.statuses.entries().toArray().map(entry => entry[1]);
+        if (activeEffects.length > 0 && activeEffects[0] instanceof Object) {
+            // If the active effects are objects, get the IDs
+            activeEffects = activeEffects.map(effect => effect.id);
+        }
+        if (debug) console.log('Sorted Status Effects | Actor Effects:', activeEffects);
+
+        // Check if we're showing active effects above the HUD
+        const aboveHudDisplay = game.settings.get('sorted-status-effects', 'aboveHudDisplay');
+        const showAboveHud = game.settings.get('sorted-status-effects', 'showAboveHud');
+
         // Make icons for the tags
         const tagIcons = game.settings.get('sorted-status-effects', 'tagIcons') || {};
         if (tags.length > 0) {
@@ -379,7 +410,8 @@ export class SortedStatusEffects {
                     // Re-render the HUD to apply the changes
                     canvas.tokens.hud.render();
                 });
-                if (game.settings.get('sorted-status-effects', 'showAboveHud')) {
+                // Only add tag icons if not showing active effects above HUD or if not showing above HUD
+                if (showAboveHud && aboveHudDisplay === 'tags') {
                     tagIconContainer.append(tagIcon);
                     tagIcon.css('border-bottom', 'none');
                     tagIcon.css('border-radius', '4px 4px 0px 0px')
@@ -388,26 +420,43 @@ export class SortedStatusEffects {
                     if (!monksLittleDetailsAlterHud) {
                         tagIcon.css('width', '38px');
                     }
-                } else {
+                } else if (!showAboveHud || (showAboveHud && aboveHudDisplay === 'active')) {
+                    // Show tag categories in the main HUD if either:
+                    // 1. Not showing above HUD at all, OR
+                    // 2. Above HUD is in active effects mode
                     if (monksLittleDetailsAlterHud) {
                         // Add a text label to the tag icons
                         tagIcon.append(`<div class="effect-name" style="${shownTags.includes(tag) ? 'opacity: 1' : ''}">${tag}</div>`);
                     }
                     statusEffectsContainer.append(tagIcon);
-                };
+                }
                 count++;
             }
         }
 
-        // Get the selected token and its actor to check for status effects
-        const selectedToken = canvas.tokens.controlled[0];
-        const actor = selectedToken.actor;
-        let activeEffects = actor.statuses.entries().toArray().map(entry => entry[1]);
-        if (activeEffects.length > 0 && activeEffects[0] instanceof Object) {
-            // If the active effects are objects, get the IDs
-            activeEffects = activeEffects.map(effect => effect.id);
+        // If we're showing active effects above the HUD, add them
+        if (showAboveHud && aboveHudDisplay === 'active' && activeEffects.length > 0) {
+            // Style the container for active effects
+            tagIconContainer.addClass('active-effects-container');
+            
+            // Add each active effect as an icon
+            for (let effectId of activeEffects) {
+                const effect = sortedStatusEffects[effectId];
+                if (!effect) continue;
+                
+                // Find the original icon for this effect
+                const originalIcon = statusIconsArray.find(icon => {
+                    const iconEffectId = $(icon).data('statusId') || $(icon).data('effectId');
+                    return iconEffectId === effectId;
+                });
+                
+                if (originalIcon) {
+                    const $originalIcon = $(originalIcon);
+                    const effectIcon = $originalIcon.clone();
+                    tagIconContainer.append(effectIcon);
+                }
+            }
         }
-        if (debug) console.log('Sorted Status Effects | Actor Effects:', activeEffects);
 
         // Create a container for the active status effects
         const activeStatusEffectsContainer = $('<div id="sse-active-status-effects-container"></div>');
@@ -438,7 +487,6 @@ export class SortedStatusEffects {
         // Add opacity setting
         const opacity = game.settings.get('sorted-status-effects', 'sidebarOpacity');
         // Sort the status icons based on the sorted status effects object
-        const statusIconsArray = Array.from(statusIcons); // Convert to array to prevent modification issues
         statusIconsArray.forEach((icon, index) => {
             if (debug) console.log('Sorted Status Effects | Icon:', icon);
             const effectId = effectIds[index];
