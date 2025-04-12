@@ -1,5 +1,6 @@
 import { registerKeybinds, onEffectKeyDown, onEffectKeyUp, onTagKeyDown } from "./scripts/keybindings.js";
 import { TagConfigurationDialog } from "./scripts/tag-configuration-dialog.js";
+import { ImportExportDialog } from "./scripts/import-export-dialog.js";
 
 let sortedStatusEffects = {};
 let shownTags = [];
@@ -100,6 +101,15 @@ export class SortedStatusEffects {
             label: 'Configure Tags and Icons',
             icon: 'fas fa-tags',
             type: TagConfigurationDialog,
+            restricted: true
+        });
+        
+        // Add import/export menu
+        game.settings.registerMenu('sorted-status-effects', 'importExport', {
+            name: 'Import/Export Settings',
+            label: 'Import/Export Settings',
+            icon: 'fas fa-file-export',
+            type: ImportExportDialog,
             restricted: true
         });
 

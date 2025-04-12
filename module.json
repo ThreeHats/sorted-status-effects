@@ -27,11 +27,13 @@
   "esmodules": [
     "sorted-status-effects.js",
     "scripts/keybindings.js",
-    "scripts/tag-configuration-dialog.js"
+    "scripts/tag-configuration-dialog.js",
+    "scripts/import-export-dialog.js"
   ],
   "templates": [
     "templates/tag-config.html",
-    "templates/reset-options.html"
+    "templates/reset-options.html",
+    "templates/import-export.html"
   ],
   "styles": [
     "styles/sorted-status-effects.css"

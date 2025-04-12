@@ -1,0 +1,18 @@
+<!-- filepath: c:\Users\Noah\Documents\GitHub\sorted-status-effects\templates\import-export.html -->
+<form>
+    <div>
+        <p>Use these tools to import/export your settings, tags, and sorting order</p>
+        <button type="button" id="export-button" name="export" class="dialog-button">
+            <i class="fas fa-file-export"></i> Export Settings
+        </button>
+        <hr>
+        <label for="import-file">Import Settings:</label>
+        <div class="import-controls">
+            <input type="file" id="import-file" name="import-file" accept=".json" style="flex: 1;">
+            <button type="button" id="import-button" name="import" class="dialog-button">
+                <i class="fas fa-file-import"></i> Import Settings
+            </button>
+        </div>
+        <p class="notes">Select a previously exported JSON file.</p>
+    </div>
+</form>
