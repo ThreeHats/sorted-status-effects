@@ -65,12 +65,25 @@ export class SortedStatusEffects {
             },
             default: 1.0
         });
-        game.settings.register('sorted-status-effects', 'showAboveMonksLittleDetails', {
-            name: 'Move the status effect tag icons above the HUD with Monks Little Details alter-hud enabled',
+        game.settings.register('sorted-status-effects', 'statusEffectHUDWidth', {
+            name: 'Status Effect HUD Width',
+            hint: 'Controls the width of the status effect HUD (in number of icons)',
+            scope: 'world',
+            config: true,
+            type: Number,
+            range: {
+                min: 1,
+                max: 20,
+                step: 1
+            },
+            default: 4
+        });
+        game.settings.register('sorted-status-effects', 'showAboveHud', {
+            name: 'Move the status effect tag icons above the HUD',
             scope: 'world',
             config: true,
             type: Boolean,
-            default: false
+            default: true
         });
         game.settings.register('sorted-status-effects', 'debug', {
             name: 'Debug',
@@ -270,6 +283,10 @@ export class SortedStatusEffects {
 
         if (debug) console.log('Sorted Status Effects | Tags:', tags);
 
+        // Hud width is set in number of icons, so multiply by 38px (the size of the icons)
+        let hudWidth = game.settings.get('sorted-status-effects', 'statusEffectHUDWidth') * 38;
+        statusEffectsContainer.css('width', `${hudWidth}px`);
+
         // check for illandril-token-hud-scale and monks-little-details compatibility
         let size = 24;
         let sizeW = 24;
@@ -284,7 +301,7 @@ export class SortedStatusEffects {
         // create a new div for the tag icons above the hud
         const tagIconContainer = $(`<div id="sse-tag-icon-container"></div>`);
         statusEffectsContainer.append(tagIconContainer);
-        if (!game.settings.get('sorted-status-effects', 'showAboveMonksLittleDetails') &&
+        if (!game.settings.get('sorted-status-effects', 'showAboveHud') &&
         game.modules.get('monks-little-details') !== undefined && 
         game.modules.get('monks-little-details').active && 
         game.settings.get('monks-little-details', 'alter-hud')) {
@@ -324,20 +341,20 @@ export class SortedStatusEffects {
                     // Re-render the HUD to apply the changes
                     canvas.tokens.hud.render();
                 });
-                if (game.modules.get('monks-little-details') !== undefined && 
-                game.modules.get('monks-little-details').active && 
-                game.settings.get('monks-little-details', 'alter-hud')) {
+                if (game.settings.get('sorted-status-effects', 'showAboveHud')) {
                     tagIconContainer.append(tagIcon);
-                    if (game.settings.get('sorted-status-effects', 'showAboveMonksLittleDetails')) {
-                        tagIcon.css('border-bottom', 'none');
-                        tagIcon.css('border-radius', '4px 4px 0px 0px')
-                        tagIcon.css('border-color', '#bbb')
-                        tagIcon.css('background', '#333')
-                    } else {
+                    tagIcon.css('border-bottom', 'none');
+                    tagIcon.css('border-radius', '4px 4px 0px 0px')
+                    tagIcon.css('border-color', '#bbb')
+                    tagIcon.css('background', '#333')
+                    if (!game.settings.get('monks-little-details', 'alter-hud')) {
+                        tagIcon.css('width', '38px');
+                    }
+                } else {
+                    if (game.settings.get('monks-little-details', 'alter-hud')) {
                         // Add a text label to the tag icons
                         tagIcon.append(`<div class="effect-name" style="${shownTags.includes(tag) ? 'opacity: 1' : ''}">${tag}</div>`);
                     }
-                } else {
                     statusEffectsContainer.append(tagIcon);
                 };
                 count++;
