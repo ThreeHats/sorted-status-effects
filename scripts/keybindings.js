@@ -51,7 +51,7 @@ function onEffectMouseOut() {
 export function onEffectKeyDown(event) {
     let debug = game.settings.get('sorted-status-effects', 'debug');
     // Check if we're dragging a tag by looking for data-is-tag on the img element
-    const imgElement = activeEffectHudIcon.querySelector('img');
+    const imgElement = activeEffectHudIcon?.querySelector('img');
     isTagDrag = imgElement ? imgElement.dataset.isTag === "true" : false;
 
     // For tags, we don't need to check activeEffectHud visibility
@@ -117,7 +117,9 @@ export function onEffectKeyDown(event) {
 export function onEffectKeyUp(event) {
     // Cleanup: remove the icon and event listeners
     document.removeEventListener('mousemove', _onMouseMove);
+    if (!_dragIcon) return;
     document.body.removeChild(_dragIcon);
+    _dragIcon = null;
 
     let debug = game.settings.get('sorted-status-effects', 'debug');
 
