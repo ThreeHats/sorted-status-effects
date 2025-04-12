@@ -79,6 +79,14 @@ export class SortedStatusEffects {
             },
             default: 4
         });
+        game.settings.register('sorted-status-effects', 'showSearchBar', {
+            name: 'Show Search Bar',
+            hint: 'Show a search bar to filter status effects',
+            scope: 'world',
+            config: true,
+            type: Boolean,
+            default: true
+        });
         game.settings.register('sorted-status-effects', 'showAboveHud', {
             name: 'Move the status effect tag icons above the HUD',
             scope: 'world',
@@ -202,13 +210,15 @@ export class SortedStatusEffects {
         const statusEffectsContainer = html.find('.status-effects');
         
         // Add a search container at the top
-        const searchContainer = $(`
-            <div id="sse-search-container">
-                <input type="text" id="sse-search-input" placeholder="Search effects..." />
-                <i class="fas fa-search" id="sse-search-icon"></i>
-            </div>
-        `);
-        statusEffectsContainer.prepend(searchContainer);
+        if (game.settings.get('sorted-status-effects', 'showSearchBar')) {
+            const searchContainer = $(`
+                <div id="sse-search-container">
+                    <input type="text" id="sse-search-input" placeholder="Search effects..." />
+                    <i class="fas fa-search" id="sse-search-icon"></i>
+                </div>
+            `);
+            statusEffectsContainer.prepend(searchContainer);
+        }
         
         // Add event listener to the search input
         $('#sse-search-input').on('input', function() {
