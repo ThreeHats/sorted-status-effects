@@ -66,6 +66,19 @@ export class SortedStatusEffects {
             },
             default: 1.0
         });
+        game.settings.register('sorted-status-effects', 'sidebarMaxColumns', {
+            name: 'Sidebar Max Columns',
+            hint: 'Controls the maximum number of columns displayed in the sidebar when in horizontal mode',
+            scope: 'world',
+            config: true,
+            type: Number,
+            range: {
+                min: 1,
+                max: 24,
+                step: 1
+            },
+            default: 8
+        });
         game.settings.register('sorted-status-effects', 'statusEffectHUDWidth', {
             name: 'Status Effect HUD Width',
             hint: 'Controls the width of the status effect HUD (in number of icons)',
@@ -582,12 +595,13 @@ export class SortedStatusEffects {
                         maxEffects = category.children().length;
                     }
                 }
-            });
-            if (maxEffects > 0) {
+            });            if (maxEffects > 0) {
                 activeStatusEffectsContainer.css('width', `${(size + gap) * maxEffects}px`);
-                const cappedMaxEffects = Math.min(maxEffects, 8);
+                // Use the new setting for maximum columns instead of a hardcoded value
+                const maxColumns = game.settings.get('sorted-status-effects', 'sidebarMaxColumns');
+                const cappedMaxEffects = Math.min(maxEffects, maxColumns);
                 activeStatusEffectsContainer.css('width', `${(size + gap) * cappedMaxEffects}px`);
-                activeStatusEffectsContainer.css('max-width', '300px');
+                activeStatusEffectsContainer.css('max-width', `${(size + gap) * maxColumns + 10}px`);
             } else {
                 // If no effects are shown, collapse the container
                 activeStatusEffectsContainer.css('width', '0');
