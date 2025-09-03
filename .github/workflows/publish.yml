@@ -78,7 +78,7 @@ jobs:
 
       - name: Create GitHub Release
         id: create_version_release
-        uses: ncipollo/release-action@v1.16.0
+        uses: ncipollo/release-action@v1.19.2
         with:
           allowUpdates: false
           name: Release ${{ steps.get_version.outputs.version }}
